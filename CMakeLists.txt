@@ -3,4 +3,4 @@ project(client)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(client main.cpp data.h Client.h Client.cpp)
+add_executable(client main.cpp data.h Client.h Client.cpp Gui.cpp Gui.h)

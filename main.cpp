@@ -1,5 +1,6 @@
 #include "data.h"
 #include "Client.h"
+#include "Gui.h"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -46,17 +47,12 @@ int main(int argc, char *argv[]) {
         return 4;
     }
 
-    Reply reply;
-    reply = Client::getInstance().RegisterAccount(socketFD);
+    Client::getInstance().logout(socketFD);
 
-    if (reply == Reply::Allowed) {
-        std::cout << "Allowed\n";
-    } else if (reply == Reply::Denied) {
-        std::cout << "Denied\n";
-    } else if (reply == Reply::Success) {
-        std::cout << "Success\n";
-    } else if (reply == Reply::Failure) {
-        std::cout << "Failure\n";
+    Gui gui = Gui(socketFD);
+    while (gui.showActions())
+    {
+
     }
 
     close(socketFD);

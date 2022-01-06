@@ -10,17 +10,23 @@ public:
         return instance;
     }
 
-    Reply RegisterAccount(const int socketFD);
+    Reply registerAccount(const int socketFD, userData newUser);
 
-    Reply DeleteAccount(const int socketFD);
+    Reply deleteAccount(const int socketFD);
 
-    Reply Login(const int socketFD);
+    Reply login(const int socketFD, userData user);
 
-    Reply Logout(const int socketFD);
+    Reply logout(const int socketFD);
 
-    Reply SendMessage(const int socketFD);
+    Reply sendMessage(const int socketFD, messageReducedData message);
 
-    Reply GetNewMessages(const int socketFD);
+    Reply getNewMessages(const int socketFD);
+
+    Reply addFriend(const int socketFD, userData user);
+
+    Reply removeFriend(const int socketFD, userData user);
+
+    Reply getFriendRequests(const int socketFD);
 
 private:
     Client() {}
