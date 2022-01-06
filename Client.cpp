@@ -136,7 +136,7 @@ Reply Client::getNewMessages(const int socketFD) {
             if (n < 0) {
                 perror("Error reading from socket");
             }
-            std::cout<<"From: "<<newMessage.from<<" To: "<<newMessage.to<<" Text: " <<newMessage.text;
+            std::cout<<"From: "<<newMessage.from<<" To: "<<newMessage.to<<" Text: " <<newMessage.text << std::endl;
         }
 
         n = read(socketFD, &reply, sizeof(Reply));
@@ -247,6 +247,37 @@ Reply Client::removeFriend(const int socketFD, userData user) {
         if (n < 0) {
             perror("Error writing to socket");
         }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+
+    return reply;
+}
+
+Reply Client::getHistory(const int socketFD) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::GetHistory);
+
+    if (reply == Reply::Allowed) {
+        int n;
+        int historyLinesNumber;
+        n = read(socketFD, &historyLinesNumber, sizeof(int));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+        std::cout<<"\\\\\\History---"<<std::endl;
+        for (int i = 0; i < historyLinesNumber; i++) {
+            messageData message;
+            n = read(socketFD, &message, sizeof(messageData));
+            if (n < 0) {
+                perror("Error reading from socket");
+            }
+            std::cout<<"From: "<<message.from<<" To: "<< message.to << " Text: " << message.text<<std::endl;
+        }
+        std::cout<<"---History///"<<std::endl;
 
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
