@@ -28,8 +28,6 @@ public:
 
     Reply getFriendRequests(const int socketFD);
 
-    Reply getHistory(const int socketFD);
-
 private:
     Client() {}
 
