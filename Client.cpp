@@ -2,6 +2,8 @@
 
 #include <unistd.h>
 #include <iostream>
+#include <cstdio>
+#include <cmath>
 
 Reply Client::registerAccount(const int socketFD, userData newUser) {
     std::cout<<"registerAccount"<<std::endl;
@@ -36,6 +38,7 @@ Reply Client::deleteAccount(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::DeleteAccount);
 
+    //TODO reply::Agree necessary ?
     if (reply == Reply::Allowed) {
         reply = Reply::Agree;
 
@@ -255,4 +258,56 @@ Reply Client::removeFriend(const int socketFD, userData user) {
     }
 
     return reply;
+}
+// Presun public casti budovania kluca zo servra do klienta
+Reply Client::getPublicKey(const int socketFD){
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::SendPublicKey);
+
+    if (reply == Reply::Allowed)
+    {
+        int n;
+        long long PublicP;
+        n = write(socketFD, &PublicP, sizeof(long long));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+        P = PublicP;
+
+        reply = Reply::Agree;
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+
+        int PublicG;
+        n = write(socketFD, &PublicG, sizeof(int));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+        G = PublicG;
+        if (P > 0 && G > 0){
+            reply = Reply::Success;
+        }
+        else{
+            reply = Reply::Failure;
+        }
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+    return reply;
+}
+
+//TODO Vytvoriy metodu na encrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
+std::string encryptMessage(std::string UnencryptedMessage) {
+    std::string encryptedMessage = UnencryptedMessage;
+    return encryptedMessage;
+}
+
+//TODO Vytvoriy metodu na deencrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
+std::string decryptMessage(std::string EncryptedMessage) {
+    std::string unencryptedMessage = EncryptedMessage;
+    return unencryptedMessage;
 }
