@@ -41,9 +41,12 @@ public:
 
     Reply getHistory(const int socketFD);
 
-        //Malo by sa pouzivat pri vytvarani aby sa dostali oba public parametre do clienta co najkor.
     Reply getPublicKey(const int socketFD);
-  
+
+    Reply sendPrivateKeyComponent(const int socketFD);
+
+    Reply getPrivateKeyComponent(const int socketFD);
+
 private:
     long long P = 0;
     int G = 0;
@@ -51,8 +54,10 @@ private:
     Client() {}
 
     Reply sendAction(const int socketFD, Action action);
+
     //Todo bude pracovat len pri posielani messagov medzi friendmi
     std::string encryptMessage(std::string UnencryptedMessage);
+
     std::string decryptMessage(std::string EncryptedMessage);
 public:
     Client(Client const &) = delete;
