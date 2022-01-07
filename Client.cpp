@@ -259,6 +259,23 @@ Reply Client::removeFriend(const int socketFD, userData user) {
 
     return reply;
 }
+
+
+
+
+
+//TODO Vytvoriy metodu na encrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
+std::string encryptMessage(std::string UnencryptedMessage) {
+    std::string encryptedMessage = UnencryptedMessage;
+    return encryptedMessage;
+}
+
+//TODO Vytvoriy metodu na deencrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
+std::string decryptMessage(std::string EncryptedMessage) {
+    std::string unencryptedMessage = EncryptedMessage;
+    return unencryptedMessage;
+}
+
 // Presun public casti budovania kluca zo servra do klienta
 Reply Client::getPublicKey(const int socketFD){
     Reply reply;
@@ -298,16 +315,4 @@ Reply Client::getPublicKey(const int socketFD){
         }
     }
     return reply;
-}
-
-//TODO Vytvoriy metodu na encrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string encryptMessage(std::string UnencryptedMessage) {
-    std::string encryptedMessage = UnencryptedMessage;
-    return encryptedMessage;
-}
-
-//TODO Vytvoriy metodu na deencrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string decryptMessage(std::string EncryptedMessage) {
-    std::string unencryptedMessage = EncryptedMessage;
-    return unencryptedMessage;
 }
