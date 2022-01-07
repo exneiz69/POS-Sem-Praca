@@ -4,6 +4,7 @@
 #include "data.h"
 #include <iostream>
 #include <fstream>
+#include <string>
 
 class Client {
 public:
@@ -25,9 +26,13 @@ public:
     Reply sendFile(const int socketFD, fileReducedData file);
 
     Reply getNewMessages(const int socketFD);
-
+  
     Reply getNewFiles(const int socketFD);
 
+        /*TODO Pri pridavani frienda by sa mali zamenit komponenty symetrickych klucov na podporu encrypted direct messaging
+         * z ktorych sa potom posklada symetricky private key pomocov random cisla pre kazdeho z dvoch friend userov. Ten bude potom
+         * pouzity pre encrypciu a decrypciu messagov. SEE: Diffie-Hellman algorithm!
+        */
     Reply addFriend(const int socketFD, userData user);
 
     Reply removeFriend(const int socketFD, userData user);
@@ -36,12 +41,19 @@ public:
 
     Reply getHistory(const int socketFD);
 
-
+        //Malo by sa pouzivat pri vytvarani aby sa dostali oba public parametre do clienta co najkor.
+    Reply getPublicKey(const int socketFD);
+  
 private:
+    long long P = 0;
+    int G = 0;
+    int privateKey;
     Client() {}
 
     Reply sendAction(const int socketFD, Action action);
-
+    //Todo bude pracovat len pri posielani messagov medzi friendmi
+    std::string encryptMessage(std::string UnencryptedMessage);
+    std::string decryptMessage(std::string EncryptedMessage);
 public:
     Client(Client const &) = delete;
 

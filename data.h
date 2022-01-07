@@ -7,7 +7,7 @@ enum class Reply {
 };
 
 enum class Action {
-    RegisterAccount = 0x0400, DeleteAccount, Login, Logout, SendMessage, GetNewMessages, AddFriend, RemoveFriend, GetFriendRequests, GetHistory, SendFile, GetNewFiles
+    RegisterAccount = 0x0400, DeleteAccount, Login, Logout, SendMessage, GetNewMessages, AddFriend, RemoveFriend, GetFriendRequests, GetHistory, SendFile, GetNewFiles, SendPublicKey
 };
 
 struct userData {
