@@ -2,6 +2,8 @@
 #define CLIENT_CLIENT_H
 
 #include "data.h"
+#include <iostream>
+#include <fstream>
 
 class Client {
 public:
@@ -20,7 +22,11 @@ public:
 
     Reply sendMessage(const int socketFD, messageReducedData message);
 
+    Reply sendFile(const int socketFD, fileReducedData file);
+
     Reply getNewMessages(const int socketFD);
+
+    Reply getNewFiles(const int socketFD);
 
     Reply addFriend(const int socketFD, userData user);
 
@@ -29,6 +35,7 @@ public:
     Reply getFriendRequests(const int socketFD);
 
     Reply getHistory(const int socketFD);
+
 
 private:
     Client() {}
