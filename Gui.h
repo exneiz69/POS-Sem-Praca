@@ -7,6 +7,7 @@
 
 #include "Client.h"
 #include <iostream>
+#include <fstream>
 #include "data.h"
 
 
