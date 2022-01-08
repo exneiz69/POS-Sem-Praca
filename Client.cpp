@@ -38,7 +38,6 @@ Reply Client::deleteAccount(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::DeleteAccount);
 
-    //TODO reply::Agree necessary ?
     if (reply == Reply::Allowed) {
         reply = Reply::Agree;
 
@@ -96,7 +95,7 @@ Reply Client::logout(const int socketFD) {
             perror("Error reading from socket");
         }
     }
-
+    this->privateKey = 0;
     return reply;
 }
 
@@ -163,7 +162,6 @@ Reply Client::sendAction(const int socketFD, Action action) {
     if (n < 0) {
         perror("Error reading from socket");
     }
-
     return reply;
 }
 
@@ -409,13 +407,14 @@ Reply Client::getHistory(const int socketFD) {
             std::string unencryptedMessage = EncryptedMessage;
             return unencryptedMessage;
         }
-
+//TODO metoda ktora posle servru private componenty en/decrypt kluca
 Reply Client::sendPrivateKeyComponent(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::GetPrivateKeyComponent);
     return reply;
 }
 
+//TODO metoda ktora poziada server a dostane private componenty en/decrypt kluca
 Reply Client::getPrivateKeyComponent(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::SendPrivateKeyComponent);

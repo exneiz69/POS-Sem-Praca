@@ -29,10 +29,6 @@ public:
   
     Reply getNewFiles(const int socketFD);
 
-        /*TODO Pri pridavani frienda by sa mali zamenit komponenty symetrickych klucov na podporu encrypted direct messaging
-         * z ktorych sa potom posklada symetricky private key pomocov random cisla pre kazdeho z dvoch friend userov. Ten bude potom
-         * pouzity pre encrypciu a decrypciu messagov. SEE: Diffie-Hellman algorithm!
-        */
     Reply addFriend(const int socketFD, userData user);
 
     Reply removeFriend(const int socketFD, userData user);
@@ -43,6 +39,8 @@ public:
 
     Reply getPublicKey(const int socketFD);
 
+    Reply sendEncryptedMessage(const int socketFD, messageReducedData message);
+
     Reply sendPrivateKeyComponent(const int socketFD);
 
     Reply getPrivateKeyComponent(const int socketFD);
@@ -50,15 +48,17 @@ public:
 private:
     long long P = 0;
     int G = 0;
-    int privateKey;
+    int privateKey; // TODO iny pre kazdu session. Vytvori sa pri prihlaseni a zmaze sa pri odhlaseni.
+
     Client() {}
 
     Reply sendAction(const int socketFD, Action action);
 
-    //Todo bude pracovat len pri posielani messagov medzi friendmi
+    //TODO samotna metoda ktora bude encryptovat messages.
     std::string encryptMessage(std::string UnencryptedMessage);
-
+    //TODO samotna metoda ktora bude decryptovat messages.
     std::string decryptMessage(std::string EncryptedMessage);
+
 public:
     Client(Client const &) = delete;
 
