@@ -409,13 +409,13 @@ long long Client::diffieHelmanStepTwo(long long privateKeyComponentServer, long 
     long long g = this->getG();
     long long p = this->getP();
     long long temp = ((privateKeyComponentServer) ^ privateKeyBase) % p;
-    std::cout << " Diffie 2 = " << temp << std::endl;
+//    std::cout << " Diffie 2 = " << temp << std::endl;
     return temp;
 }
 
 
 Reply Client::buildSymmetricConnection(const int socketFD) {
-    std::cout << " Zpusteny BSC" << std::endl;
+//    std::cout << " Zpusteny BSC" << std::endl;
     long long privateKeyBase = primeNumberGenerator();
     long long privateKeyComponentClient;
     long long privateKeyComponentServer;
@@ -424,7 +424,7 @@ Reply Client::buildSymmetricConnection(const int socketFD) {
     std::cout << (int) reply;
     privateKeyComponentClient = diffieHelmanStepOne(privateKeyBase);
     if (reply == Reply::Allowed) {
-        std::cout << "Idem do servra " << privateKeyComponentClient <<std::endl;
+//        std::cout << "Idem do servra " << privateKeyComponentClient <<std::endl;
         int n;
         n = write(socketFD, &privateKeyComponentClient, sizeof(long long));
         if (n < 0) {
@@ -437,18 +437,18 @@ Reply Client::buildSymmetricConnection(const int socketFD) {
             perror("Error writing to socket");
         }
 
-        std::cout << "Idem od servera" << std::endl;
+//        std::cout << "Idem od servera" << std::endl;
         n = read(socketFD, &privateKeyComponentServer, sizeof(long long));
         if (n < 0) {
             perror("Error reading from socket");
         }
 
-        std::cout << "Zo servra prislo " << privateKeyComponentServer << std::endl;
+//        std::cout << "Zo servra prislo " << privateKeyComponentServer << std::endl;
 
         long long temp = diffieHelmanStepTwo(privateKeyComponentServer, privateKeyBase);
         this->privateKey = temp;
         if (this->privateKey != 0) {
-            std::cout << "Success, Private key je vytvoreny." << std::endl;
+//            std::cout << "Success, Private key je vytvoreny." << std::endl;
         }
 
         n = read(socketFD, &reply, sizeof(Reply));
@@ -471,9 +471,9 @@ long long Client::getG() {
 
 void Client::afterLoginSymetryPairing(const int socketFD) {
     Client::getInstance().getPublicKey(socketFD);
-    std::cout << "P = " << this->getP() << " G = " << this->getG() << std::endl;
+//    std::cout << "P = " << this->getP() << " G = " << this->getG() << std::endl;
     Client::getInstance().buildSymmetricConnection(socketFD);
-    std::cout << "private key = " << this->privateKey << std::endl;
+//    std::cout << "private key = " << this->privateKey << std::endl;
 }
 
 
@@ -481,7 +481,7 @@ long long Client::primeNumberGenerator() {
     long long randomBeginning = ((rand()%10000)+ 10000) - (rand()%10000);
     long long primeNum = randomBeginning;
     bool isPrime = false;
-    std::cout << "Started searching for a sufficient prime, beginning is " << randomBeginning << std::endl;
+//    std::cout << "Started searching for a sufficient prime, beginning is " << randomBeginning << std::endl;
     while (isPrime == false) {
         for (long long i = 2; i <= primeNum / 2; ++i) {
             if (primeNum % i == 0) {
@@ -493,7 +493,7 @@ long long Client::primeNumberGenerator() {
         ++primeNum;
     }
     --primeNum;
-    std::cout << "Client has found a sufficient prime, " << primeNum << std::endl;
+//    std::cout << "Client has found a sufficient prime, " << primeNum << std::endl;
 
     return primeNum;
 }
