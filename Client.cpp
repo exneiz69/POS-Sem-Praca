@@ -1,6 +1,9 @@
 #include "Client.h"
 
 #include <unistd.h>
+#include <iostream>
+#include <cstdio>
+#include <cmath>
 
 Reply Client::registerAccount(const int socketFD, userData newUser) {
     std::cout<<"registerAccount"<<std::endl;
@@ -10,10 +13,6 @@ Reply Client::registerAccount(const int socketFD, userData newUser) {
     reply = this->sendAction(socketFD, Action::RegisterAccount);
 
     if (reply == Reply::Allowed) {
-//        userData newUser;
-//        std::cin.getline(newUser.login, sizeof(newUser.login));
-//        std::cin.getline(newUser.password, sizeof(newUser.password));
-
         int n;
         n = write(socketFD, &newUser, sizeof(userData));
         if (n < 0) {
@@ -279,7 +278,6 @@ Reply Client::sendFile(const int socketFD, fileReducedData file) {
 
     return reply;
 }
-
 Reply Client::getHistory(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::GetHistory);
@@ -307,9 +305,6 @@ Reply Client::getHistory(const int socketFD) {
             perror("Error reading from socket");
         }
     }
-
-    return reply;
-}
 
 Reply Client::getNewFiles(const int socketFD) {
     Reply reply;
@@ -343,15 +338,12 @@ Reply Client::getNewFiles(const int socketFD) {
             outFile.close();
 
         }
-
+        
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error reading from socket");
         }
     }
-
-    return reply;
-}
 
 Reply Client::createGroup(const int socketFD, groupData group) {
     Reply reply;
@@ -360,6 +352,7 @@ Reply Client::createGroup(const int socketFD, groupData group) {
     if (reply == Reply::Allowed)
     {
         int n;
+
         n = write(socketFD, &group, sizeof(groupData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -391,6 +384,5 @@ Reply Client::addUserToGroup(const int socketFD, groupData group) {
             perror("Error reading from socket");
         }
     }
-
     return reply;
 }

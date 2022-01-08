@@ -4,6 +4,7 @@
 #include "data.h"
 #include <iostream>
 #include <fstream>
+#include <string>
 
 class Client {
 public:
@@ -25,7 +26,7 @@ public:
     Reply sendFile(const int socketFD, fileReducedData file);
 
     Reply getNewMessages(const int socketFD);
-
+  
     Reply getNewFiles(const int socketFD);
 
     Reply addFriend(const int socketFD, userData user);
@@ -39,13 +40,14 @@ public:
     Reply createGroup(const int socketFD, groupData group);
 
     Reply addUserToGroup(const int socketFD, groupData group);
-
-
+  
 private:
+    long long P = 0;
+    int G = 0;
+    int privateKey;
     Client() {}
 
     Reply sendAction(const int socketFD, Action action);
-
 public:
     Client(Client const &) = delete;
 

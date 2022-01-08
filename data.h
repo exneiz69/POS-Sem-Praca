@@ -1,7 +1,6 @@
 #ifndef CLIENT_DATA_H
 #define CLIENT_DATA_H
 
-
 enum class Reply {
     Allowed = 0x0200, Denied, Success, Failure, Agree, Disagree
 };
