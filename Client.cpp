@@ -384,15 +384,19 @@ Reply Client::getNewFiles(const int socketFD) {
 }
 
 
-//TODO Vytvoriy metodu na encrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string encryptMessage(std::string UnencryptedMessage) {
+std::string Client::encryptMessage(std::string UnencryptedMessage) {
     std::string encryptedMessage = UnencryptedMessage;
+    for (int i = 0; i < sizeof(UnencryptedMessage); ++i) {
+        encryptedMessage[i] += getPrivateKey();
+    }
     return encryptedMessage;
 }
 
-//TODO Vytvoriy metodu na deencrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string decryptMessage(std::string EncryptedMessage) {
+std::string Client::decryptMessage(std::string EncryptedMessage) {
     std::string unencryptedMessage = EncryptedMessage;
+    for (int i = 0; i < sizeof(EncryptedMessage); ++i) {
+        unencryptedMessage[i] -= getPrivateKey();
+    }
     return unencryptedMessage;
 }
 
@@ -496,4 +500,29 @@ long long Client::primeNumberGenerator() {
 //    std::cout << "Client has found a sufficient prime, " << primeNum << std::endl;
 
     return primeNum;
+}
+
+long long int Client::getPrivateKey() const {
+    long long temp = this->privateKey;
+    return temp;
+}
+
+Reply Client::sendEncryptedMessage(const int socketFD, encryptedData message) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::SendMessage);
+
+    if (reply == Reply::Allowed) {
+        int n;
+        n = write(socketFD, &message, sizeof(encryptedData));
+        if (n < 0) {
+            perror("Error writing to socket");
+        }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+
+    return reply;
 }

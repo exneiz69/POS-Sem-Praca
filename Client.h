@@ -50,7 +50,12 @@ public:
 private:
     long long P = 0;
     long long G = 0;
-    long long privateKey;
+    long long privateKey = 0;
+
+private:
+
+    long long int getPrivateKey() const;
+
     Client() {}
 
     Reply sendAction(const int socketFD, Action action);
@@ -65,9 +70,8 @@ private:
 
     long long primeNumberGenerator();
 
-    //TODO samotna metoda ktora bude encryptovat messages.
     std::string encryptMessage(std::string UnencryptedMessage);
-    //TODO samotna metoda ktora bude decryptovat messages.
+
     std::string decryptMessage(std::string EncryptedMessage);
 
 public:
