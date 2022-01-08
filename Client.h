@@ -35,16 +35,15 @@ public:
 
     Reply getFriendRequests(const int socketFD);
 
+    //TODO vytvorit metodu na vyziadanie friendlistu ak bude cas.
+
     Reply getHistory(const int socketFD);
 
     Reply getPublicKey(const int socketFD);
 
     Reply sendEncryptedMessage(const int socketFD, messageReducedData message);
 
-    Reply buildSymmetricConnection(const int socketFD);
-
-    void afterLoginSymetryPairing(const int socketFD);
-
+    Reply getEncryptedMessages(const int socketFD);
 
 
 private:
@@ -60,6 +59,10 @@ private:
 
     Reply sendAction(const int socketFD, Action action);
 
+    Reply buildSymmetricConnection(const int socketFD);
+
+    void afterLoginSymetryPairing(const int socketFD);
+
     long long diffieHelmanStepOne(long long Prime);
 
     long long diffieHelmanStepTwo(long long privateKeyComponentClient, long long privateKeyComponentServer);
@@ -69,10 +72,6 @@ private:
     long long getG();
 
     long long primeNumberGenerator();
-
-    std::string encryptMessage(std::string UnencryptedMessage);
-
-    std::string decryptMessage(std::string EncryptedMessage);
 
 public:
     Client(Client const &) = delete;

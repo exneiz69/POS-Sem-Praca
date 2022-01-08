@@ -75,15 +75,16 @@ bool Gui::showActions() {
     {
         std::cout << "Actions available:" << std::endl;
         std::cout << "\t" << "1 : Get messages" << std::endl;
-        std::cout << "\t" << "2 : Send messages" << std::endl;
-        std::cout << "\t" << "3 : Add friend" << std::endl;
-        std::cout << "\t" << "4 : Get friend requests" << std::endl;
-        std::cout << "\t" << "5 : Remove friend" << std::endl;
-        std::cout << "\t" << "6 : Delete account" << std::endl;
-        std::cout << "\t" << "7 : logout" << std::endl;
-        std::cout << "\t" << "8 : Send file" << std::endl;
-        std::cout << "\t" << "9 : Get new files" << std::endl;
-        std::cout << "\t" << "10 : Get history" << std::endl;
+        std::cout << "\t" << "2 : Send message" << std::endl;
+        std::cout << "\t" << "3 : Send encrypted message" << std::endl;
+        std::cout << "\t" << "4 : Add friend" << std::endl;
+        std::cout << "\t" << "5 : Get friend requests" << std::endl;
+        std::cout << "\t" << "6 : Remove friend" << std::endl;
+        std::cout << "\t" << "7 : Delete account" << std::endl;
+        std::cout << "\t" << "8 : logout" << std::endl;
+        std::cout << "\t" << "9 : Send file" << std::endl;
+        std::cout << "\t" << "10 : Get new files" << std::endl;
+        std::cout << "\t" << "11 : Get history" << std::endl;
         std::cout << "\t" << "0 : Exit" << std::endl;
         std::cout << "Enter choice: ";
         int choice = -1;
@@ -103,9 +104,9 @@ bool Gui::showActions() {
             Reply reply = Client::getInstance().getNewMessages(this->socketFD);
 
             if (reply == Reply::Success)
-                std::cout << "---All messages were read---" << std::endl;
+                std::cout << "---No new messages.---" << std::endl;
             else
-                std::cout << "---All messages were not read---" << std::endl;
+                std::cout << "---Receiving new messages.---" << std::endl;
         }
         else if (choice == 2)
         {
@@ -126,6 +127,26 @@ bool Gui::showActions() {
         }
         else if (choice == 3)
         {
+            messageReducedData message;
+            std::cout << "Enter recipient: " << std::endl;
+            std::cin >> message.to;
+            //TODO poslat len friendovy.
+            Client::getInstance().
+            message.to
+            std::cout << "Enter message: " << std::endl;
+            std::cin.ignore(256, '\n');
+            messageData md;
+            std::cin.getline(message.text, sizeof(md.text));
+
+            Reply reply = Client::getInstance().sendEncryptedMessage(this->socketFD, message);
+
+            if (reply == Reply::Success)
+                std::cout << "---Sent---" << std::endl;
+            else
+                std::cout << "---Not sent---" << std::endl;
+        }
+        else if (choice == 4)
+        {
             userData user;
             std::cout << "Enter friend's name: " << std::endl;
             std::cin >> user.login;
@@ -137,7 +158,7 @@ bool Gui::showActions() {
             else
                 std::cout << "---Friend request not sent---" << std::endl;
         }
-        else if (choice == 4)
+        else if (choice == 5)
         {
             Reply reply = Client::getInstance().getFriendRequests(this->socketFD);
             if (reply == Reply::Success)
@@ -145,7 +166,7 @@ bool Gui::showActions() {
             else
                 std::cout << "---Friends not added---" << std::endl;
         }
-        else if (choice == 5)
+        else if (choice == 6)
         {
             userData user;
             std::cout << "Enter friend's name: " << std::endl;
@@ -158,7 +179,7 @@ bool Gui::showActions() {
             else
                 std::cout << "---Friend was not removed---" << std::endl;
         }
-        else if (choice == 6)
+        else if (choice == 7)
         {
             Reply reply = Client::getInstance().deleteAccount(this->socketFD);
 
@@ -171,13 +192,13 @@ bool Gui::showActions() {
                 std::cout << "---Account was not successfully deleted---" << std::endl;
 
         }
-        else if (choice == 7)
+        else if (choice == 8)
         {
             this->state = GuiState::sLoggedOut;
             Client::getInstance().logout(this->socketFD);
 
         }
-        else if (choice == 8)
+        else if (choice == 9)
         {
             fileReducedData fd;
 
@@ -226,7 +247,7 @@ bool Gui::showActions() {
                 std::cout << "---Sending file was not successful---" << std::endl;
 
         }
-        else if (choice == 9)
+        else if (choice == 10)
         {
             Reply reply = Client::getInstance().getNewFiles(this->socketFD);
 
@@ -238,7 +259,7 @@ bool Gui::showActions() {
                 std::cout << "---Downloading file was not successful---" << std::endl;
 
         }
-        else if (choice == 10)
+        else if (choice == 11)
         {
             Reply reply = Client::getInstance().getHistory(this->socketFD);
             if (reply == Reply::Success)
