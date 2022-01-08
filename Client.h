@@ -45,14 +45,21 @@ public:
 
     Reply getPrivateKeyComponent(const int socketFD);
 
+
+
 private:
-    long long P = 0;
+    int P = 0;
     int G = 0;
+    int PrivateKeyComponentServer = 0;
+    int PrivateKeyComponentClient = 0;
     int privateKey; // TODO iny pre kazdu session. Vytvori sa pri prihlaseni a zmaze sa pri odhlaseni.
 
     Client() {}
 
     Reply sendAction(const int socketFD, Action action);
+
+    int diffieHelmanStepOne();
+    void diffieHelmanStepTwo();
 
     //TODO samotna metoda ktora bude encryptovat messages.
     std::string encryptMessage(std::string UnencryptedMessage);

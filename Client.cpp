@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cmath>
+#include <stdlib.h>
 
 Reply Client::registerAccount(const int socketFD, userData newUser) {
     std::cout<<"registerAccount"<<std::endl;
@@ -73,6 +74,9 @@ Reply Client::login(const int socketFD, userData user) {
             perror("Error reading from socket");
         }
         getPublicKey(socketFD);
+        diffieHelmanStepOne();
+        getPrivateKeyComponent(socketFD);
+
     }
     return reply;
 }
@@ -411,6 +415,14 @@ Reply Client::getHistory(const int socketFD) {
 Reply Client::sendPrivateKeyComponent(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::GetPrivateKeyComponent);
+    if (reply == Reply::Allowed) {
+        int n;
+        int privateKeyComponentClient = this->PrivateKeyComponentClient;
+        n = write(socketFD, &privateKeyComponentClient, sizeof(int));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
     return reply;
 }
 
@@ -418,5 +430,27 @@ Reply Client::sendPrivateKeyComponent(const int socketFD) {
 Reply Client::getPrivateKeyComponent(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::SendPrivateKeyComponent);
+
+    if (reply == Reply::Allowed) {
+        int n;
+        int privateKeyComponentServer;
+        n = read(socketFD, &privateKeyComponentServer, sizeof(int));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+        this->PrivateKeyComponentServer = privateKeyComponentServer;
+    }
     return reply;
+}
+
+int Client::diffieHelmanStepOne() {
+    // TODO random PRIME number generator, zatial 3
+    int k = 3;
+    this->PrivateKeyComponentClient = (G^k) % P;
+    int temp = this->PrivateKeyComponentClient;
+    return temp;
+}
+
+void Client::diffieHelmanStepTwo() {
+    this->privateKey = (PrivateKeyComponentClient^PrivateKeyComponentServer)%P;
 }
