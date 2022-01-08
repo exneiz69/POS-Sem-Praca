@@ -41,8 +41,10 @@ bool Gui::showActions() {
 
             Reply reply = Client::getInstance().login(this->socketFD, user);
 
-            if (reply == Reply::Success)
+            if (reply == Reply::Success) {
+                Client::getInstance().afterLoginSymetryPairing(this->socketFD);
                 this->state = GuiState::sLoggedIn;
+            }
         }
         else if (choice == 2)
         {
