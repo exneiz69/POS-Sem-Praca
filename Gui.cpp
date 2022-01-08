@@ -5,6 +5,7 @@
 #include "Gui.h"
 
 
+
 Gui::Gui(int socketFD) {
     this->socketFD = socketFD;
     this->state = GuiState::sLoggedOut;

@@ -11,6 +11,7 @@
 #include "data.h"
 
 
+
 enum class GuiState {sLoggedOut = 0, sLoggedIn};
 
 class Gui {

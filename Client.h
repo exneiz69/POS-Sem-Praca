@@ -46,11 +46,11 @@ public:
     void afterLoginSymetryPairing(const int socketFD);
 
 
+
 private:
     long long P = 0;
     long long G = 0;
-    long long privateKey; // TODO iny pre kazdu session. Vytvori sa pri prihlaseni a zmaze sa pri odhlaseni.
-
+    long long privateKey;
     Client() {}
 
     Reply sendAction(const int socketFD, Action action);
@@ -62,6 +62,8 @@ private:
     long long getP();
 
     long long getG();
+
+    long long primeNumberGenerator();
 
     //TODO samotna metoda ktora bude encryptovat messages.
     std::string encryptMessage(std::string UnencryptedMessage);

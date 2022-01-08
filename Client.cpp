@@ -304,6 +304,7 @@ Reply Client::getHistory(const int socketFD) {
     return reply;
 }
 
+
 // Presun public casti budovania kluca zo servra do klienta
 Reply Client::getPublicKey(const int socketFD) {
     Reply reply;
@@ -336,6 +337,7 @@ Reply Client::getPublicKey(const int socketFD) {
             perror("Error reading from socket");
         }
     }
+
     return reply;
 }
 
@@ -395,32 +397,34 @@ std::string decryptMessage(std::string EncryptedMessage) {
 }
 
 long long Client::diffieHelmanStepOne(long long Prime) {
-    // TODO random PRIME number generator, zatial 3
-    std::cout << " Diffie 1" << std::endl;
     long long k = Prime;
-    long long PrivateKeyComponentClient = (this->getG() ^ k) % this->getP();
-    long long temp = PrivateKeyComponentClient;
+    long long g = this->getG();
+    long long p = this->getP();
+    long long temp = ((g^k) % p);
+    std::cout << " Diffie 1 = " << temp << std::endl;
     return temp;
 }
 
-long long Client::diffieHelmanStepTwo(long long privateKeyBase, long long privateKeyComponentServer) {
-    std::cout << " Diffie 2" << std::endl;
-    long long temp = (privateKeyComponentServer ^ privateKeyBase) % this->getP();
+long long Client::diffieHelmanStepTwo(long long privateKeyComponentServer, long long privateKeyBase) {
+    long long g = this->getG();
+    long long p = this->getP();
+    long long temp = ((privateKeyComponentServer) ^ privateKeyBase) % p;
+    std::cout << " Diffie 2 = " << temp << std::endl;
     return temp;
 }
+
 
 Reply Client::buildSymmetricConnection(const int socketFD) {
     std::cout << " Zpusteny BSC" << std::endl;
+    long long privateKeyBase = primeNumberGenerator();
+    long long privateKeyComponentClient;
+    long long privateKeyComponentServer;
     Reply reply;
     reply = this->sendAction(socketFD, Action::BuildSymmetricConnection);
     std::cout << (int) reply;
-    // TODO prime number generator;
-    long long privateKeyBase = 3;
-    long long privateKeyComponentClient;
-    long long privateKeyComponentServer;
     privateKeyComponentClient = diffieHelmanStepOne(privateKeyBase);
     if (reply == Reply::Allowed) {
-        std::cout << "Idem na client" << std::endl;
+        std::cout << "Idem do servra " << privateKeyComponentClient <<std::endl;
         int n;
         n = write(socketFD, &privateKeyComponentClient, sizeof(long long));
         if (n < 0) {
@@ -433,13 +437,15 @@ Reply Client::buildSymmetricConnection(const int socketFD) {
             perror("Error writing to socket");
         }
 
-        std::cout << "Idem na Server" << std::endl;
+        std::cout << "Idem od servera" << std::endl;
         n = read(socketFD, &privateKeyComponentServer, sizeof(long long));
         if (n < 0) {
             perror("Error reading from socket");
         }
 
-        long long temp = diffieHelmanStepTwo(privateKeyBase, privateKeyComponentServer);
+        std::cout << "Zo servra prislo " << privateKeyComponentServer << std::endl;
+
+        long long temp = diffieHelmanStepTwo(privateKeyComponentServer, privateKeyBase);
         this->privateKey = temp;
         if (this->privateKey != 0) {
             std::cout << "Success, Private key je vytvoreny." << std::endl;
@@ -468,4 +474,26 @@ void Client::afterLoginSymetryPairing(const int socketFD) {
     std::cout << "P = " << this->getP() << " G = " << this->getG() << std::endl;
     Client::getInstance().buildSymmetricConnection(socketFD);
     std::cout << "private key = " << this->privateKey << std::endl;
+}
+
+
+long long Client::primeNumberGenerator() {
+    long long randomBeginning = ((rand()%10000)+ 10000) - (rand()%10000);
+    long long primeNum = randomBeginning;
+    bool isPrime = false;
+    std::cout << "Started searching for a sufficient prime, beginning is " << randomBeginning << std::endl;
+    while (isPrime == false) {
+        for (long long i = 2; i <= primeNum / 2; ++i) {
+            if (primeNum % i == 0) {
+                isPrime = false;
+                break;
+            }
+            isPrime = true;
+        }
+        ++primeNum;
+    }
+    --primeNum;
+    std::cout << "Client has found a sufficient prime, " << primeNum << std::endl;
+
+    return primeNum;
 }
