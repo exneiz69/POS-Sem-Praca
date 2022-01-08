@@ -13,10 +13,6 @@ Reply Client::registerAccount(const int socketFD, userData newUser) {
     reply = this->sendAction(socketFD, Action::RegisterAccount);
 
     if (reply == Reply::Allowed) {
-//        userData newUser;
-//        std::cin.getline(newUser.login, sizeof(newUser.login));
-//        std::cin.getline(newUser.password, sizeof(newUser.password));
-
         int n;
         n = write(socketFD, &newUser, sizeof(userData));
         if (n < 0) {
@@ -38,7 +34,6 @@ Reply Client::deleteAccount(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::DeleteAccount);
 
-    //TODO reply::Agree necessary ?
     if (reply == Reply::Allowed) {
         reply = Reply::Agree;
 
@@ -310,61 +305,6 @@ Reply Client::getHistory(const int socketFD) {
             perror("Error reading from socket");
         }
     }
-//TODO Vytvoriy metodu na encrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string encryptMessage(std::string UnencryptedMessage) {
-    std::string encryptedMessage = UnencryptedMessage;
-    return encryptedMessage;
-}
-
-//TODO Vytvoriy metodu na deencrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string decryptMessage(std::string EncryptedMessage) {
-    std::string unencryptedMessage = EncryptedMessage;
-    return unencryptedMessage;
-}
-
-// Presun public casti budovania kluca zo servra do klienta
-Reply Client::getPublicKey(const int socketFD){
-    Reply reply;
-    reply = this->sendAction(socketFD, Action::SendPublicKey);
-
-    if (reply == Reply::Allowed)
-    {
-        int n;
-        long long PublicP;
-        n = write(socketFD, &PublicP, sizeof(long long));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-        P = PublicP;
-
-        reply = Reply::Agree;
-      
-        n = read(socketFD, &reply, sizeof(Reply));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-      
-        int PublicG;
-        n = write(socketFD, &PublicG, sizeof(int));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-        G = PublicG;
-        if (P > 0 && G > 0){
-            reply = Reply::Success;
-        }
-        else{
-            reply = Reply::Failure;
-        }
-      
-        n = read(socketFD, &reply, sizeof(Reply));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-    }
-
-    return reply;
-}
 
 Reply Client::getNewFiles(const int socketFD) {
     Reply reply;
@@ -405,60 +345,44 @@ Reply Client::getNewFiles(const int socketFD) {
         }
     }
 
-
-
-//TODO Vytvoriy metodu na encrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string encryptMessage(std::string UnencryptedMessage) {
-    std::string encryptedMessage = UnencryptedMessage;
-    return encryptedMessage;
-}
-
-//TODO Vytvoriy metodu na deencrypt message, pomocov private key postavaneho z public variables, posielat len pre frienda.
-std::string decryptMessage(std::string EncryptedMessage) {
-    std::string unencryptedMessage = EncryptedMessage;
-    return unencryptedMessage;
-}
-
-
-// Presun public casti budovania kluca zo servra do klienta
-Reply Client::getPublicKey(const int socketFD){
+Reply Client::createGroup(const int socketFD, groupData group) {
     Reply reply;
-    reply = this->sendAction(socketFD, Action::SendPublicKey);
+    reply = this->sendAction(socketFD, Action::CreateGroup);
 
     if (reply == Reply::Allowed)
     {
         int n;
-        long long PublicP;
-        n = write(socketFD, &PublicP, sizeof(long long));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-        P = PublicP;
 
-        reply = Reply::Agree;
-        
-        n = read(socketFD, &reply, sizeof(Reply));
+        n = write(socketFD, &group, sizeof(groupData));
         if (n < 0) {
-            perror("Error reading from socket");
-        
-        int PublicG;
-        n = write(socketFD, &PublicG, sizeof(int));
-        if (n < 0) {
-            perror("Error reading from socket");
+            perror("Error writing to socket");
         }
-        G = PublicG;
-        if (P > 0 && G > 0){
-            reply = Reply::Success;
-        }
-        else{
-            reply = Reply::Failure;
-        }
-          
+
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error reading from socket");
         }
     }
-      
+
+    return reply;
+}
+
+Reply Client::addUserToGroup(const int socketFD, groupData group) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::AddUserToGroup);
+
+    if (reply == Reply::Allowed)
+    {
+        int n;
+        n = write(socketFD, &group, sizeof(groupData));
+        if (n < 0) {
+            perror("Error writing to socket");
+        }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
     return reply;
 }
