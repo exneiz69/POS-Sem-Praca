@@ -352,3 +352,45 @@ Reply Client::getNewFiles(const int socketFD) {
 
     return reply;
 }
+
+Reply Client::createGroup(const int socketFD, groupData group) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::CreateGroup);
+
+    if (reply == Reply::Allowed)
+    {
+        int n;
+        n = write(socketFD, &group, sizeof(groupData));
+        if (n < 0) {
+            perror("Error writing to socket");
+        }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+
+    return reply;
+}
+
+Reply Client::addUserToGroup(const int socketFD, groupData group) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::AddUserToGroup);
+
+    if (reply == Reply::Allowed)
+    {
+        int n;
+        n = write(socketFD, &group, sizeof(groupData));
+        if (n < 0) {
+            perror("Error writing to socket");
+        }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+
+    return reply;
+}

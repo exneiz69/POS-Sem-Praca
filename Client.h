@@ -36,6 +36,10 @@ public:
 
     Reply getHistory(const int socketFD);
 
+    Reply createGroup(const int socketFD, groupData group);
+
+    Reply addUserToGroup(const int socketFD, groupData group);
+
 
 private:
     Client() {}
