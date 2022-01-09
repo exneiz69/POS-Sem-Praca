@@ -95,6 +95,7 @@ Reply Client::logout(const int socketFD) {
         }
     }
     this->privateKey = 0;
+    std::cout << (int)reply << std::endl;
     return reply;
 }
 
@@ -390,7 +391,7 @@ long long Client::diffieHelmanStepOne(long long Prime) {
     long long g = this->getG();
     long long p = this->getP();
     long long temp = ((g^k) % p);
-    std::cout << " Diffie 1 = " << temp << std::endl;
+//    std::cout << " Diffie 1 = " << temp << std::endl;
     return temp;
 }
 
@@ -463,8 +464,6 @@ void Client::afterLoginSymetryPairing(const int socketFD) {
 //    std::cout << "P = " << this->getP() << " G = " << this->getG() << std::endl;
     Client::getInstance().buildSymmetricConnection(socketFD);
 //    std::cout << "private key = " << this->privateKey << std::endl;
-    Client::getInstance().getEncryptedMessages(socketFD);
-//    std::cout << "Vypisuju sa encrypted message ktore boli zaslane kym bol uzivatel offline." << std::endl;
 }
 
 
@@ -499,10 +498,10 @@ Reply Client::sendEncryptedMessage(const int socketFD, messageReducedData messag
     messageReducedData encryptedMessage = message;
     std::cout<< "Decrypted message: to: " << decryptedMessage.to << "; Text: " << decryptedMessage.text << std::endl;
     for (int i = 0; i < sizeof(decryptedMessage.to); ++i) {
-        encryptedMessage.to[i] = decryptedMessage.to[i] + getPrivateKey();
+        encryptedMessage.to[i] = (decryptedMessage.to[i] + (getPrivateKey() % 74));
     }
     for (int i = 0; i < sizeof(decryptedMessage.text); ++i) {
-        encryptedMessage.text[i] = decryptedMessage.text[i] + getPrivateKey();
+        encryptedMessage.text[i] = (decryptedMessage.text[i] + (getPrivateKey() % 74));
     }
     std::cout<< "Encrypted message: to: " << encryptedMessage.to << "; Text: " << encryptedMessage.text << std::endl;
     Reply reply;
@@ -518,17 +517,12 @@ Reply Client::sendEncryptedMessage(const int socketFD, messageReducedData messag
         if (n < 0) {
             perror("Error reading from socket");
         }
-
-        if (reply == Reply::Disagree)
-        {
-            std:cout << "Unable to send encrypted message, recipient is not "
-        }
     }
 
     return reply;
 }
 //TODO dokoncit metodu getEncrypted messages.
-Reply Client::getEncryptedMessages(const int socketFD) {
+Reply Client::getNewEncryptedMessages(const int socketFD) {
         Reply reply;
         reply = this->sendAction(socketFD, Action::GetEncryptedMessages);
 
@@ -539,34 +533,38 @@ Reply Client::getEncryptedMessages(const int socketFD) {
             if (n < 0) {
                 perror("Error reading from socket");
             }
-            messageData decryptedMessage;
-            messageData encryptedMessage;
-            messageData newMessage;
-            for (int i = 0; i < newMessagesNumber; i++) {
-                n = read(socketFD, &newMessage, sizeof(messageData));
+            std::cout << "You have " << newMessagesNumber << " new encrypted messages." << std::endl;
+
+            if (newMessagesNumber != 0) {
+                messageData decryptedMessage;
+                messageData encryptedMessage;
+                messageData newMessage;
+                for (int i = 0; i < newMessagesNumber; i++) {
+                    n = read(socketFD, &newMessage, sizeof(messageData));
+                    if (n < 0) {
+                        perror("Error reading from socket");
+                    }
+
+                    encryptedMessage = newMessage;
+                    std::cout << "Encrypted message: From: " << encryptedMessage.from << " to: " << encryptedMessage.to<< " Text: " << encryptedMessage.text << std::endl;
+
+                    for (int i = 0; i < sizeof(decryptedMessage.from); ++i) {
+                        encryptedMessage.from[i] = (decryptedMessage.from[i] - (getPrivateKey() % 74));
+                    }
+                    for (int i = 0; i < sizeof(decryptedMessage.to); ++i) {
+                        encryptedMessage.to[i] = (decryptedMessage.to[i] - (getPrivateKey() % 74));
+                    }
+                    for (int i = 0; i < sizeof(decryptedMessage.text); ++i) {
+                        encryptedMessage.text[i] = (decryptedMessage.text[i] - (getPrivateKey() % 74));
+                    }
+                    std::cout << "Decrypted message: From: " << encryptedMessage.from << " to: " << decryptedMessage.to << " Text: " << decryptedMessage.text << std::endl;
+                }
+
+                n = read(socketFD, &reply, sizeof(Reply));
                 if (n < 0) {
                     perror("Error reading from socket");
                 }
-
-                encryptedMessage = newMessage;
-                std::cout<< "Encrypted message: From: "<< encryptedMessage.from << " to: " << encryptedMessage.to << " Text: " << encryptedMessage.text << std::endl;
-                for (int i = 0; i < sizeof(decryptedMessage.from); ++i) {
-                    encryptedMessage.from[i] = decryptedMessage.from[i] - getPrivateKey();
-                }
-                for (int i = 0; i < sizeof(decryptedMessage.to); ++i) {
-                    encryptedMessage.to[i] = decryptedMessage.to[i] - getPrivateKey();
-                }
-                for (int i = 0; i < sizeof(decryptedMessage.text); ++i) {
-                    encryptedMessage.text[i] = decryptedMessage.text[i] - getPrivateKey();
-                }
-                std::cout<< "Decrypted message: From: "<< encryptedMessage.from << " to: " << decryptedMessage.to << " Text: " << decryptedMessage.text << std::endl;
-            }
-
-            n = read(socketFD, &reply, sizeof(Reply));
-            if (n < 0) {
-                perror("Error reading from socket");
             }
         }
-
         return reply;
     }

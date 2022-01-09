@@ -45,6 +45,9 @@ bool Gui::showActions() {
             if (reply == Reply::Success) {
                 Client::getInstance().afterLoginSymetryPairing(this->socketFD);
                 this->state = GuiState::sLoggedIn;
+                std::cout<<std::endl;
+                std::cout << "Vypisuju sa encrypted message ktore vam boli zaslane kym bol uzivatel offline:" << std::endl;
+                Client::getInstance().getNewEncryptedMessages(this->socketFD);
             }
         }
         else if (choice == 2)
@@ -130,9 +133,6 @@ bool Gui::showActions() {
             messageReducedData message;
             std::cout << "Enter recipient: " << std::endl;
             std::cin >> message.to;
-            //TODO poslat len friendovy.
-            Client::getInstance().
-            message.to
             std::cout << "Enter message: " << std::endl;
             std::cin.ignore(256, '\n');
             messageData md;
@@ -141,9 +141,9 @@ bool Gui::showActions() {
             Reply reply = Client::getInstance().sendEncryptedMessage(this->socketFD, message);
 
             if (reply == Reply::Success)
-                std::cout << "---Sent---" << std::endl;
+                std::cout << "---Encrypted message sent---" << std::endl;
             else
-                std::cout << "---Not sent---" << std::endl;
+                std::cout << "---Encrypted message not sent---" << std::endl;
         }
         else if (choice == 4)
         {
