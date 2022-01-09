@@ -34,6 +34,7 @@ bool Gui::showActions() {
             Reply reply = Client::getInstance().login(this->socketFD, user);
 
             if (reply == Reply::Success)
+                Client::getInstance().afterLoginSymetryPairing(this->socketFD);
                 this->state = GuiState::LoggedIn;
         } else if (choice == 2) {
             userData user;
@@ -58,17 +59,19 @@ bool Gui::showActions() {
     } else if (this->state == GuiState::LoggedIn) {
         std::cout << "Actions available:" << std::endl;
         std::cout << "\t" << "1 : Get messages" << std::endl;
-        std::cout << "\t" << "2 : Send messages" << std::endl;
-        std::cout << "\t" << "3 : Add friend" << std::endl;
-        std::cout << "\t" << "4 : Get friend requests" << std::endl;
-        std::cout << "\t" << "5 : Remove friend" << std::endl;
-        std::cout << "\t" << "6 : Delete account" << std::endl;
-        std::cout << "\t" << "7 : logout" << std::endl;
-        std::cout << "\t" << "8 : Send file" << std::endl;
-        std::cout << "\t" << "9 : Get new files" << std::endl;
-        std::cout << "\t" << "10 : Get history" << std::endl;
-        std::cout << "\t" << "11 : Create group" << std::endl;
-        std::cout << "\t" << "12 : Add to group" << std::endl;
+        std::cout << "\t" << "2 : Send message" << std::endl;
+        std::cout << "\t" << "3 : Get encrypted messages" << std::endl;
+        std::cout << "\t" << "4 : Send encrypted message" << std::endl;
+        std::cout << "\t" << "5 : Add friend" << std::endl;
+        std::cout << "\t" << "6 : Get friend requests" << std::endl;
+        std::cout << "\t" << "7 : Remove friend" << std::endl;
+        std::cout << "\t" << "8 : Delete account" << std::endl;
+        std::cout << "\t" << "9 : logout" << std::endl;
+        std::cout << "\t" << "10 : Send file" << std::endl;
+        std::cout << "\t" << "11 : Get new files" << std::endl;
+        std::cout << "\t" << "12 : Get history" << std::endl;
+        std::cout << "\t" << "13 : Create group" << std::endl;
+        std::cout << "\t" << "14 : Add to group" << std::endl;
         std::cout << "\t" << "0 : Exit" << std::endl;
         std::cout << "Enter choice: ";
         int choice = -1;
@@ -104,6 +107,27 @@ bool Gui::showActions() {
             else
                 std::cout << "---Not sent---" << std::endl;
         } else if (choice == 3) {
+            Reply reply = Client::getInstance().getNewEncryptedMessages(this->socketFD);
+
+            if (reply == Reply::Success)
+                std::cout << "---All encrypted messages were read---" << std::endl;
+            else
+                std::cout << "---All encrypted messages were not read---" << std::endl;
+        } else if (choice == 4) {
+            messageReducedData messageReducedData;
+            std::cout << "Enter recipient: " << std::endl;
+            std::cin >> messageReducedData.to;
+            std::cout << "Enter message: " << std::endl;
+            std::cin.ignore(256, '\n');
+            std::cin.getline(messageReducedData.text, sizeof(messageReducedData::text));
+
+            Reply reply = Client::getInstance().sendEncryptedMessage(this->socketFD, messageReducedData);
+
+            if (reply == Reply::Success)
+                std::cout << "---Sent---" << std::endl;
+            else
+                std::cout << "---Not sent---" << std::endl;
+        } else if (choice == 5) {
             userData user;
             std::cout << "Enter friend's name: " << std::endl;
             std::cin >> user.login;
@@ -114,13 +138,13 @@ bool Gui::showActions() {
                 std::cout << "---Friend request sent---" << std::endl;
             else
                 std::cout << "---Friend request not sent---" << std::endl;
-        } else if (choice == 4) {
+        } else if (choice == 6) {
             Reply reply = Client::getInstance().getFriendRequests(this->socketFD);
             if (reply == Reply::Success)
                 std::cout << "---Friends added---" << std::endl;
             else
                 std::cout << "---Friends not added---" << std::endl;
-        } else if (choice == 5) {
+        } else if (choice == 7) {
             userData user;
             std::cout << "Enter friend's name: " << std::endl;
             std::cin >> user.login;
@@ -131,7 +155,7 @@ bool Gui::showActions() {
                 std::cout << "---Friend removed---" << std::endl;
             else
                 std::cout << "---Friend was not removed---" << std::endl;
-        } else if (choice == 6) {
+        } else if (choice == 8) {
             Reply reply = Client::getInstance().deleteAccount(this->socketFD);
 
             if (reply == Reply::Success) {
@@ -140,10 +164,10 @@ bool Gui::showActions() {
             } else
                 std::cout << "---Account was not successfully deleted---" << std::endl;
 
-        } else if (choice == 7) {
+        } else if (choice == 9) {
             this->state = GuiState::LoggedOut;
             Client::getInstance().logout(this->socketFD);
-        } else if (choice == 8) {
+        } else if (choice == 10) {
             fileReducedData fd;
 
             std::cout << "Enter recipient:" << std::endl;
@@ -180,7 +204,7 @@ bool Gui::showActions() {
             } else
                 std::cout << "---Sending file was not successful---" << std::endl;
 
-        } else if (choice == 9) {
+        } else if (choice == 11) {
             Reply reply = Client::getInstance().getNewFiles(this->socketFD);
 
             if (reply == Reply::Success) {
@@ -188,13 +212,13 @@ bool Gui::showActions() {
             } else
                 std::cout << "---Downloading file was not successful---" << std::endl;
 
-        } else if (choice == 10) {
+        } else if (choice == 12) {
             Reply reply = Client::getInstance().getHistory(this->socketFD);
             if (reply == Reply::Success)
                 std::cout << "---History read---" << std::endl;
             else
                 std::cout << "---History not read---" << std::endl;
-        } else if (choice == 11) {
+        } else if (choice == 13) {
             std::cout << "Enter group name: ";
             groupData gd;
             std::cin >> gd.name;
@@ -204,7 +228,7 @@ bool Gui::showActions() {
                 std::cout << "---Group created successfully---" << std::endl;
             else
                 std::cout << "---Group not created---" << std::endl;
-        } else if (choice == 12) {
+        } else if (choice == 14) {
             std::cout << "Enter group name: ";
             groupData gd;
             std::cin >> gd.name;
