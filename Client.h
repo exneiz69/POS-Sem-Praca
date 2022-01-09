@@ -13,43 +13,44 @@ public:
         return instance;
     }
 
+    Reply registerAccount(int socketFD, const userData& newUser);
 
-    Reply registerAccount(const int socketFD, userData newUser);
+    Reply deleteAccount(int socketFD);
 
-    Reply deleteAccount(const int socketFD);
+    Reply login(int socketFD, const userData& user);
 
-    Reply login(const int socketFD, userData user);
+    Reply logout(int socketFD);
 
-    Reply logout(const int socketFD);
+    Reply sendMessage(int socketFD, const messageReducedData& message);
 
-    Reply sendMessage(const int socketFD, messageReducedData message);
+    Reply sendFile(int socketFD, const fileReducedData& file);
 
-    Reply sendFile(const int socketFD, fileReducedData file);
-
-    Reply getNewMessages(const int socketFD);
+    Reply getNewMessages(int socketFD);
   
-    Reply getNewFiles(const int socketFD);
+    Reply getNewFiles(int socketFD);
 
-    Reply addFriend(const int socketFD, userData user);
+    Reply addFriend(int socketFD, const userData& user);
 
-    Reply removeFriend(const int socketFD, userData user);
+    Reply removeFriend(int socketFD, const userData& user);
 
-    Reply getFriendRequests(const int socketFD);
+    Reply getFriendRequests(int socketFD);
 
-    Reply getHistory(const int socketFD);
+    Reply getHistory(int socketFD);
 
-    Reply getPublicKey(const int socketFD);
+    Reply createGroup(int socketFD, const groupData& group);
 
-    Reply sendEncryptedMessage(const int socketFD, messageReducedData message);
+    Reply getPublicKey(int socketFD);
 
-    Reply getNewEncryptedMessages(const int socketFD);
+    Reply sendEncryptedMessage(int socketFD, messageReducedData message);
 
-    void afterLoginSymetryPairing(const int socketFD);
+    Reply getNewEncryptedMessages(int socketFD);
 
-    Reply createGroup(const int socketFD, groupData group);
+    void afterLoginSymetryPairing(int socketFD);
 
-    Reply addUserToGroup(const int socketFD, groupData group);
+    Reply createGroup(int socketFD, groupData group);
 
+    Reply addUserToGroup(int socketFD, const groupData& group);
+  
 private:
     long long P = 0;
     long long G = 0;
@@ -61,7 +62,7 @@ private:
 
     Client() {}
 
-    Reply sendAction(const int socketFD, Action action);
+    Reply sendAction(int socketFD, Action action);
 
     Reply buildSymmetricConnection(const int socketFD);
 
