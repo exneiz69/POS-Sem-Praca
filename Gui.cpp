@@ -5,7 +5,6 @@
 #include "Gui.h"
 
 
-
 Gui::Gui(int socketFD) {
     this->socketFD = socketFD;
     this->state = GuiState::sLoggedOut;
@@ -88,6 +87,8 @@ bool Gui::showActions() {
         std::cout << "\t" << "9 : Send file" << std::endl;
         std::cout << "\t" << "10 : Get new files" << std::endl;
         std::cout << "\t" << "11 : Get history" << std::endl;
+        std::cout << "\t" << "13 : Create group" << std::endl;
+        std::cout << "\t" << "14 : Add to group" << std::endl;
         std::cout << "\t" << "0 : Exit" << std::endl;
         std::cout << "Enter choice: ";
         int choice = -1;
@@ -96,7 +97,7 @@ bool Gui::showActions() {
         {
             std::cin >> choice;
 
-            if (choice < 11 && choice > -1)
+            if (choice < 14 && choice > -1)
                 break;
             else
                 std::cout << "Invalid choice, enter again: ";
@@ -109,7 +110,7 @@ bool Gui::showActions() {
             if (reply == Reply::Success)
                 std::cout << "---No new messages.---" << std::endl;
             else
-                std::cout << "---Receiving new messages.---" << std::endl;
+                std::cout << "---All messages were not read---" << std::endl;
         }
         else if (choice == 2)
         {
@@ -266,6 +267,30 @@ bool Gui::showActions() {
                 std::cout << "---History read---" << std::endl;
             else
                 std::cout << "---History not read---" << std::endl;
+        }
+        else if (choice == 12)
+        {
+            std::cout<<"Enter group name: ";
+            groupData gd;
+            std::cin >> gd.name;
+
+            Reply reply = Client::getInstance().createGroup(this->socketFD, gd);
+            if (reply == Reply::Success)
+                std::cout << "---Group created successfully---" << std::endl;
+            else
+                std::cout << "---Group not created---" << std::endl;
+        }
+        else if (choice == 13)
+        {
+            std::cout<<"Enter group name: ";
+            groupData gd;
+            std::cin >> gd.name;
+
+            Reply reply = Client::getInstance().addUserToGroup(this->socketFD, gd);
+            if (reply == Reply::Success)
+                std::cout << "---Added to group---" << std::endl;
+            else
+                std::cout << "---Not added to group---" << std::endl;
         }
         else if (choice == 0)
         {

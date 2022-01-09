@@ -45,6 +45,10 @@ public:
 
     void afterLoginSymetryPairing(const int socketFD);
 
+    Reply createGroup(const int socketFD, groupData group);
+
+    Reply addUserToGroup(const int socketFD, groupData group);
+
 private:
     long long P = 0;
     long long G = 0;
