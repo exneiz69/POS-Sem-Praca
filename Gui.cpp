@@ -31,6 +31,32 @@ bool Gui::showActions() {
             std::cout << "Enter password: " << std::endl;
             std::cin >> user.password;
 
+            std::string tempString;
+            std::string encryptedPassword = "Dano";
+            encryptedPassword += user.password;
+            encryptedPassword += "Drevo";
+            int messageLength = encryptedPassword.length();
+            char temp;
+
+            for (int j = 0; j < 80; ++j) {
+                temp = encryptedPassword[0];
+                for (int i = 0; i < messageLength - 1; ++i) {
+                    encryptedPassword[i] = encryptedPassword[i + 1];
+                }
+                encryptedPassword[messageLength - 1] = temp;
+            }
+
+            for (int i = 0; i < messageLength; ++i) {
+                encryptedPassword[i] = (char)(encryptedPassword[i] % 74);
+                encryptedPassword[i] += (char)128;
+            }
+            tempString = encryptedPassword;
+            for (int i = messageLength - 1; i >= 0; --i) {
+                (encryptedPassword).push_back(tempString[i]);
+            }
+
+            user.password = encryptedPassword;
+
             Reply reply = Client::getInstance().login(this->socketFD, user);
 
             if (reply == Reply::Success)
