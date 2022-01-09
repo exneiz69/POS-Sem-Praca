@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
-project(client)
+project(Client)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(client main.cpp Client.cpp Client.h data.h Gui.cpp Gui.h)
+add_executable(Client main.cpp Client.cpp Client.h data.h Gui.cpp Gui.h)

@@ -51,6 +51,8 @@ public:
 
     void afterLoginSymetryPairing(int socketFD);
 
+    void encryptPassword(userData& user);
+
 private:
     long long P = 0;
 

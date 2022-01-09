@@ -309,7 +309,7 @@ Reply Client::addFriend(const int socketFD, const userData &user) {
 
     if (reply == Reply::Allowed) {
         ssize_t n;
-        n = write(socketFD, &user, sizeof(userData));
+        n = write(socketFD, &user, sizeof(userData::login));
         if (n < 0) {
             perror("Error writing to socket");
         }
@@ -375,7 +375,7 @@ Reply Client::removeFriend(const int socketFD, const userData &user) {
 
     if (reply == Reply::Allowed) {
         ssize_t n;
-        n = write(socketFD, &user, sizeof(userData));
+        n = write(socketFD, &user, sizeof(userData::login));
         if (n < 0) {
             perror("Error writing to socket");
         }
@@ -506,20 +506,17 @@ Reply Client::createGroup(const int socketFD, const groupData &group) {
 Reply Client::addUserToGroup(const int socketFD, const groupData &group) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::AddUserToGroup);
-
     if (reply == Reply::Allowed) {
         ssize_t n;
         n = write(socketFD, &group, sizeof(groupData));
         if (n < 0) {
             perror("Error writing to socket");
         }
-
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error reading from socket");
         }
     }
-
     return reply;
 }
 
@@ -588,4 +585,32 @@ Reply Client::sendAction(const int socketFD, Action action) {
     }
 
     return reply;
+}
+
+void Client::encryptPassword(userData &user) {
+    std::string tempString;
+    std::string encryptedPassword = "Dano";
+    encryptedPassword += user.password;
+    encryptedPassword += "Drevo";
+    int messageLength = encryptedPassword.length();
+    char temp;
+
+    for (int j = 0; j < 80; ++j) {
+        temp = encryptedPassword[0];
+        for (int i = 0; i < messageLength - 1; ++i) {
+            encryptedPassword[i] = encryptedPassword[i + 1];
+        }
+        encryptedPassword[messageLength - 1] = temp;
+    }
+
+    for (int i = 0; i < messageLength; ++i) {
+        encryptedPassword[i] = (char) (encryptedPassword[i] % 74);
+        encryptedPassword[i] += (char) 128;
+    }
+    tempString = encryptedPassword;
+    for (int i = messageLength - 1; i >= 0; --i) {
+        (encryptedPassword).push_back(tempString[i]);
+    }
+
+    strcpy((char *) user.password, encryptedPassword.c_str());
 }
