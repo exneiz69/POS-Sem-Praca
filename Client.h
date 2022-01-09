@@ -13,6 +13,7 @@ public:
         return instance;
     }
 
+
     Reply registerAccount(const int socketFD, userData newUser);
 
     Reply deleteAccount(const int socketFD);

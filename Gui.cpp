@@ -49,6 +49,7 @@ bool Gui::showActions() {
                 Client::getInstance().getNewEncryptedMessages(this->socketFD);
             }
         }
+
         else if (choice == 2)
         {
             userData user;

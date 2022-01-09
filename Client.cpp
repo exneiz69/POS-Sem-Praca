@@ -137,6 +137,7 @@ Reply Client::getNewMessages(const int socketFD) {
             std::cout << "From: " << newMessage.from << " To: " << newMessage.to << " Text: " << newMessage.text << std::endl;
         }
 
+
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error reading from socket");
@@ -573,12 +574,6 @@ Reply Client::getNewEncryptedMessages(const int socketFD) {
         }
         return reply;
     }
-
-        }
-    }
-
-    return reply;
-}
 
 Reply Client::addUserToGroup(const int socketFD, groupData group) {
     Reply reply;
