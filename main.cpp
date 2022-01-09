@@ -1,4 +1,3 @@
-#include "data.h"
 #include "Client.h"
 #include "Gui.h"
 
@@ -13,8 +12,8 @@
 
 int main(int argc, char *argv[]) {
     int socketFD;
-    struct sockaddr_in serverAddress;
-    struct hostent *server;
+    sockaddr_in serverAddress = {0};
+    hostent *server;
 
     if (argc < 3) {
         fprintf(stderr, "usage %s hostname port\n", argv[0]);
@@ -22,7 +21,7 @@ int main(int argc, char *argv[]) {
     }
 
     server = gethostbyname(argv[1]);
-    if (server == NULL) {
+    if (server == nullptr) {
         fprintf(stderr, "Error, no such host\n");
         return 2;
     }
@@ -50,9 +49,7 @@ int main(int argc, char *argv[]) {
     Client::getInstance().logout(socketFD);
 
     Gui gui = Gui(socketFD);
-    while (gui.showActions())
-    {
-
+    while (gui.showActions()) {
     }
 
     close(socketFD);

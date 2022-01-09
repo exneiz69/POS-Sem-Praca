@@ -13,46 +13,42 @@ public:
         return instance;
     }
 
-    Reply registerAccount(const int socketFD, userData newUser);
+    Reply registerAccount(int socketFD, const userData& newUser);
 
-    Reply deleteAccount(const int socketFD);
+    Reply deleteAccount(int socketFD);
 
-    Reply login(const int socketFD, userData user);
+    Reply login(int socketFD, const userData& user);
 
-    Reply logout(const int socketFD);
+    Reply logout(int socketFD);
 
-    Reply sendMessage(const int socketFD, messageReducedData message);
+    Reply sendMessage(int socketFD, const messageReducedData& message);
 
-    Reply sendFile(const int socketFD, fileReducedData file);
+    Reply sendFile(int socketFD, const fileReducedData& file);
 
-    Reply getNewMessages(const int socketFD);
+    Reply getNewMessages(int socketFD);
   
-    Reply getNewFiles(const int socketFD);
+    Reply getNewFiles(int socketFD);
 
-    Reply addFriend(const int socketFD, userData user);
+    Reply addFriend(int socketFD, const userData& user);
 
-    Reply removeFriend(const int socketFD, userData user);
+    Reply removeFriend(int socketFD, const userData& user);
 
-    Reply getFriendRequests(const int socketFD);
+    Reply getFriendRequests(int socketFD);
 
-    Reply getHistory(const int socketFD);
+    Reply getHistory(int socketFD);
 
-    Reply createGroup(const int socketFD, groupData group);
+    Reply createGroup(int socketFD, const groupData& group);
 
-    Reply addUserToGroup(const int socketFD, groupData group);
+    Reply addUserToGroup(int socketFD, const groupData& group);
   
 private:
-    long long P = 0;
-    int G = 0;
-    int privateKey;
     Client() {}
 
-    Reply sendAction(const int socketFD, Action action);
+    Reply sendAction(int socketFD, Action action);
 public:
     Client(Client const &) = delete;
 
     void operator=(Client const &) = delete;
 };
-
 
 #endif //CLIENT_CLIENT_H

@@ -3,17 +3,13 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstdio>
-#include <cmath>
 
-Reply Client::registerAccount(const int socketFD, userData newUser) {
-    std::cout<<"registerAccount"<<std::endl;
-
+Reply Client::registerAccount(const int socketFD, const userData& newUser) {
     Reply reply;
-
     reply = this->sendAction(socketFD, Action::RegisterAccount);
 
     if (reply == Reply::Allowed) {
-        int n;
+        ssize_t n;
         n = write(socketFD, &newUser, sizeof(userData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -25,8 +21,6 @@ Reply Client::registerAccount(const int socketFD, userData newUser) {
         }
     }
 
-    std::cout<<"REPLY " << (int)reply<<std::endl;
-
     return reply;
 }
 
@@ -35,9 +29,16 @@ Reply Client::deleteAccount(const int socketFD) {
     reply = this->sendAction(socketFD, Action::DeleteAccount);
 
     if (reply == Reply::Allowed) {
-        reply = Reply::Agree;
+        int input = 0;
+        std::cout << "Accept/Decline 1/0 : ";
+        std::cin >> input;
+        if (input == 1) {
+            reply = Reply::Agree;
+        } else {
+            reply = Reply::Disagree;
+        }
 
-        int n;
+        ssize_t n;
         n = write(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error writing to socket");
@@ -52,13 +53,12 @@ Reply Client::deleteAccount(const int socketFD) {
     return reply;
 }
 
-Reply Client::login(const int socketFD, userData user) {
+Reply Client::login(const int socketFD, const userData& user) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::Login);
 
-    if (reply == Reply::Allowed)
-    {
-        int n;
+    if (reply == Reply::Allowed) {
+        ssize_t n;
         n = write(socketFD, &user, sizeof(userData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -78,9 +78,16 @@ Reply Client::logout(const int socketFD) {
     reply = this->sendAction(socketFD, Action::Logout);
 
     if (reply == Reply::Allowed) {
-        reply = Reply::Agree;
+        int input = 0;
+        std::cout << "Accept/Decline 1/0 : ";
+        std::cin >> input;
+        if (input == 1) {
+            reply = Reply::Agree;
+        } else {
+            reply = Reply::Disagree;
+        }
 
-        int n;
+        ssize_t n;
         n = write(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error writing to socket");
@@ -95,13 +102,12 @@ Reply Client::logout(const int socketFD) {
     return reply;
 }
 
-Reply Client::sendMessage(const int socketFD, messageReducedData message) {
+Reply Client::sendMessage(const int socketFD, const messageReducedData& message) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::SendMessage);
 
-    if (reply == Reply::Allowed)
-    {
-        int n;
+    if (reply == Reply::Allowed) {
+        ssize_t n;
         n = write(socketFD, &message, sizeof(messageReducedData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -121,7 +127,7 @@ Reply Client::getNewMessages(const int socketFD) {
     reply = this->sendAction(socketFD, Action::GetNewMessages);
 
     if (reply == Reply::Allowed) {
-        int n;
+        ssize_t n;
         int newMessagesNumber;
         n = read(socketFD, &newMessagesNumber, sizeof(int));
         if (n < 0) {
@@ -134,7 +140,8 @@ Reply Client::getNewMessages(const int socketFD) {
             if (n < 0) {
                 perror("Error reading from socket");
             }
-            std::cout<<"From: "<<newMessage.from<<" To: "<<newMessage.to<<" Text: " <<newMessage.text<<std::endl;
+            std::cout << "From: " << newMessage.from << " to: " << newMessage.to << " text: " << newMessage.text
+                      << std::endl;
         }
 
         n = read(socketFD, &reply, sizeof(Reply));
@@ -146,29 +153,12 @@ Reply Client::getNewMessages(const int socketFD) {
     return reply;
 }
 
-Reply Client::sendAction(const int socketFD, Action action) {
-    int n;
-    n = write(socketFD, &action, sizeof(Action));
-    if (n < 0) {
-        perror("Error writing to socket");
-    }
-
-    Reply reply;
-    n = read(socketFD, &reply, sizeof(Reply));
-    if (n < 0) {
-        perror("Error reading from socket");
-    }
-
-    return reply;
-}
-
-Reply Client::addFriend(const int socketFD, userData user) {
+Reply Client::addFriend(const int socketFD, const userData& user) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::AddFriend);
 
-    if (reply == Reply::Allowed)
-    {
-        int n;
+    if (reply == Reply::Allowed) {
+        ssize_t n;
         n = write(socketFD, &user, sizeof(userData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -188,7 +178,7 @@ Reply Client::getFriendRequests(const int socketFD) {
     reply = this->sendAction(socketFD, Action::GetFriendRequests);
 
     if (reply == Reply::Allowed) {
-        int n;
+        ssize_t n;
         int friendRequestsNumber;
         n = read(socketFD, &friendRequestsNumber, sizeof(int));
         if (n < 0) {
@@ -203,22 +193,17 @@ Reply Client::getFriendRequests(const int socketFD) {
             }
 
             int input = 0;
-            std::cout<<"User " << user.login << " wants to be your friend."<<std::endl;
-            std::cout<<"Accept/Decline 1/0 : ";
+            std::cout << "User " << user.login << " wants to be your friend." << std::endl;
+            std::cout << "Accept/Decline 1/0 : ";
             std::cin >> input;
-            if (input == 1)
-            {
+            if (input == 1) {
                 reply = Reply::Agree;
-                std::cout<<"Friendship with " << user.login << " is successfully created"<<std::endl;
-            }
-            else
-            {
+                std::cout << "Friendship with " << user.login << " is successfully created" << std::endl;
+            } else {
                 reply = Reply::Disagree;
-                std::cout<<"Friendship with " << user.login << " is denied"<<std::endl;
+                std::cout << "Friendship with " << user.login << " is denied" << std::endl;
             }
 
-
-            int n;
             n = write(socketFD, &reply, sizeof(Reply));
             if (n < 0) {
                 perror("Error writing to socket");
@@ -234,13 +219,12 @@ Reply Client::getFriendRequests(const int socketFD) {
     return reply;
 }
 
-Reply Client::removeFriend(const int socketFD, userData user) {
+Reply Client::removeFriend(const int socketFD, const userData& user) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::RemoveFriend);
 
-    if (reply == Reply::Allowed)
-    {
-        int n;
+    if (reply == Reply::Allowed) {
+        ssize_t n;
         n = write(socketFD, &user, sizeof(userData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -255,21 +239,17 @@ Reply Client::removeFriend(const int socketFD, userData user) {
     return reply;
 }
 
-Reply Client::sendFile(const int socketFD, fileReducedData file) {
+Reply Client::sendFile(const int socketFD, const fileReducedData& file) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::SendFile);
-    std::cout<<"trying to send SENDFILE action"<<std::endl;
-    if (reply == Reply::Allowed)
-    {
-        std::cout<<"reply was allowed"<<std::endl;
-        int n;
+
+    if (reply == Reply::Allowed) {
+        ssize_t n;
         n = write(socketFD, &file, sizeof(fileReducedData));
-        std::cout<<"error 1"<<std::endl;
         if (n < 0) {
             perror("Error writing to socket");
         }
 
-        std::cout<<"error 2"<<std::endl;
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error reading from socket");
@@ -278,27 +258,28 @@ Reply Client::sendFile(const int socketFD, fileReducedData file) {
 
     return reply;
 }
+
 Reply Client::getHistory(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::GetHistory);
 
     if (reply == Reply::Allowed) {
-        int n;
+        ssize_t n;
         int historyLinesNumber;
         n = read(socketFD, &historyLinesNumber, sizeof(int));
         if (n < 0) {
             perror("Error reading from socket");
         }
-        std::cout<<"\\\\\\History---"<<std::endl;
+        std::cout << "History---" << std::endl;
         for (int i = 0; i < historyLinesNumber; i++) {
             messageData message;
             n = read(socketFD, &message, sizeof(messageData));
             if (n < 0) {
                 perror("Error reading from socket");
             }
-            std::cout<<"From: "<<message.from<<" To: "<< message.to << " Text: " << message.text<<std::endl;
+            std::cout << "From: " << message.from << " To: " << message.to << " Text: " << message.text << std::endl;
         }
-        std::cout<<"---History///"<<std::endl;
+        std::cout << "---History" << std::endl;
 
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
@@ -306,12 +287,15 @@ Reply Client::getHistory(const int socketFD) {
         }
     }
 
+    return reply;
+}
+
 Reply Client::getNewFiles(const int socketFD) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::GetNewFiles);
 
     if (reply == Reply::Allowed) {
-        int n;
+        ssize_t n;
         int newFilesNumber;
         n = read(socketFD, &newFilesNumber, sizeof(int));
         if (n < 0) {
@@ -324,7 +308,8 @@ Reply Client::getNewFiles(const int socketFD) {
             if (n < 0) {
                 perror("Error reading from socket");
             }
-            std::cout<<"From: "<<newFile.from<<" To: "<<newFile.to<<" filename: " <<newFile.name<<std::endl;
+            std::cout << "From: " << newFile.from << " to: " << newFile.to << " file name: " << newFile.name
+                      << std::endl;
 
             char pathToFile[256];
             std::cout << "Enter full path to newly added file, with extension: " << std::endl;
@@ -332,27 +317,28 @@ Reply Client::getNewFiles(const int socketFD) {
             std::cin.getline(pathToFile, 255);
 
             std::ofstream outFile(pathToFile);
-            for (int j = 0; j < sizeof(fileData::data); ++j) {
-                outFile << newFile.data[j];
+            for (char j: newFile.data) {
+                outFile << j;
             }
             outFile.close();
 
         }
-        
+
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
             perror("Error reading from socket");
         }
     }
 
-Reply Client::createGroup(const int socketFD, groupData group) {
+    return reply;
+}
+
+Reply Client::createGroup(const int socketFD, const groupData& group) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::CreateGroup);
 
-    if (reply == Reply::Allowed)
-    {
-        int n;
-
+    if (reply == Reply::Allowed) {
+        ssize_t n;
         n = write(socketFD, &group, sizeof(groupData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -367,13 +353,12 @@ Reply Client::createGroup(const int socketFD, groupData group) {
     return reply;
 }
 
-Reply Client::addUserToGroup(const int socketFD, groupData group) {
+Reply Client::addUserToGroup(const int socketFD, const groupData& group) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::AddUserToGroup);
 
-    if (reply == Reply::Allowed)
-    {
-        int n;
+    if (reply == Reply::Allowed) {
+        ssize_t n;
         n = write(socketFD, &group, sizeof(groupData));
         if (n < 0) {
             perror("Error writing to socket");
@@ -384,5 +369,22 @@ Reply Client::addUserToGroup(const int socketFD, groupData group) {
             perror("Error reading from socket");
         }
     }
+
+    return reply;
+}
+
+Reply Client::sendAction(const int socketFD, Action action) {
+    ssize_t n;
+    n = write(socketFD, &action, sizeof(Action));
+    if (n < 0) {
+        perror("Error writing to socket");
+    }
+
+    Reply reply;
+    n = read(socketFD, &reply, sizeof(Reply));
+    if (n < 0) {
+        perror("Error reading from socket");
+    }
+
     return reply;
 }

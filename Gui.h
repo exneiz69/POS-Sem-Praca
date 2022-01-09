@@ -1,7 +1,3 @@
-//
-// Created by Matej on 5. 1. 2022.
-//
-
 #ifndef CLIENT_GUI_H
 #define CLIENT_GUI_H
 
@@ -10,8 +6,9 @@
 #include <fstream>
 #include "data.h"
 
-
-enum class GuiState {sLoggedOut = 0, sLoggedIn};
+enum class GuiState {
+    LoggedOut, LoggedIn
+};
 
 class Gui {
 private:
@@ -22,6 +19,5 @@ public:
 
     bool showActions();
 };
-
 
 #endif //CLIENT_GUI_H
