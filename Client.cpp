@@ -138,8 +138,7 @@ Reply Client::getNewMessages(const int socketFD) {
             if (n < 0) {
                 perror("Error reading from socket");
             }
-            std::cout << "From: " << newMessage.from << " To: " << newMessage.to << " Text: " << newMessage.text
-                      << std::endl;
+            std::cout << "From: " << newMessage.from << " To: " << newMessage.to << " Text: " << newMessage.text << std::endl;
         }
 
         n = read(socketFD, &reply, sizeof(Reply));
