@@ -3,10 +3,9 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstdio>
-#include <cmath>
-#include <stdlib.h>
+#include <cstring>
 
-Reply Client::registerAccount(const int socketFD, const userData& newUser) {
+Reply Client::registerAccount(const int socketFD, const userData &newUser) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::RegisterAccount);
 
@@ -55,7 +54,7 @@ Reply Client::deleteAccount(const int socketFD) {
     return reply;
 }
 
-Reply Client::login(const int socketFD, const userData& user) {
+Reply Client::login(const int socketFD, const userData &user) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::Login);
 
@@ -71,6 +70,7 @@ Reply Client::login(const int socketFD, const userData& user) {
             perror("Error reading from socket");
         }
     }
+
     return reply;
 }
 
@@ -79,14 +79,7 @@ Reply Client::logout(const int socketFD) {
     reply = this->sendAction(socketFD, Action::Logout);
 
     if (reply == Reply::Allowed) {
-        int input = 0;
-        std::cout << "Accept/Decline 1/0 : ";
-        std::cin >> input;
-        if (input == 1) {
-            reply = Reply::Agree;
-        } else {
-            reply = Reply::Disagree;
-        }
+        reply = Reply::Agree;
 
         ssize_t n;
         n = write(socketFD, &reply, sizeof(Reply));
@@ -99,12 +92,11 @@ Reply Client::logout(const int socketFD) {
             perror("Error reading from socket");
         }
     }
-    this->privateKey = 0;
-    std::cout << (int)reply << std::endl;
+
     return reply;
 }
 
-Reply Client::sendMessage(const int socketFD, const messageReducedData& message) {
+Reply Client::sendMessage(const int socketFD, const messageReducedData &message) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::SendMessage);
 
@@ -135,6 +127,7 @@ Reply Client::getNewMessages(const int socketFD) {
         if (n < 0) {
             perror("Error reading from socket");
         }
+        std::cout << "You have " << newMessagesNumber << " new messages." << std::endl;
 
         messageData newMessage;
         for (int i = 0; i < newMessagesNumber; i++) {
@@ -155,7 +148,162 @@ Reply Client::getNewMessages(const int socketFD) {
     return reply;
 }
 
-Reply Client::addFriend(const int socketFD, const userData& user) {
+Reply Client::sendEncryptedMessage(const int socketFD, const messageReducedData &message) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::SendEncryptedMessage);
+    if (reply == Reply::Allowed) {
+        messageReducedData decryptedMessage = message;
+        std::cout << "Decrypted message: to: " << decryptedMessage.to << "; Text: " << decryptedMessage.text
+                  << std::endl;
+
+        messageReducedData encryptedMessage;
+        for (int i = 0; i < strlen(decryptedMessage.to); ++i) {
+            encryptedMessage.to[i] = (decryptedMessage.to[i] + (getPrivateKey() % 74));
+        }
+        for (int i = 0; i < strlen(decryptedMessage.text); ++i) {
+            encryptedMessage.text[i] = (decryptedMessage.text[i] + (getPrivateKey() % 74));
+        }
+        std::cout << "Encrypted message: to: " << encryptedMessage.to << "; Text: " << encryptedMessage.text
+                  << std::endl;
+
+        ssize_t n;
+        n = write(socketFD, &encryptedMessage, sizeof(messageReducedData));
+        if (n < 0) {
+            perror("Error writing to socket");
+        }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+
+    return reply;
+}
+
+Reply Client::getNewEncryptedMessages(const int socketFD) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::GetNewEncryptedMessages);
+
+    if (reply == Reply::Allowed) {
+        ssize_t n;
+        int newMessagesNumber;
+        n = read(socketFD, &newMessagesNumber, sizeof(int));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+        std::cout << "You have " << newMessagesNumber << " new encrypted messages." << std::endl;
+
+        for (int i = 0; i < newMessagesNumber; i++) {
+            messageData encryptedMessage;
+            messageData decryptedMessage;
+
+            n = read(socketFD, &encryptedMessage, sizeof(messageData));
+            if (n < 0) {
+                perror("Error reading from socket");
+            }
+
+            std::cout << "Encrypted message: From: " << encryptedMessage.from << " to: " << encryptedMessage.to
+                      << " Text: " << encryptedMessage.text << std::endl;
+
+            for (int j = 0; j < strlen(encryptedMessage.from); ++j) {
+                decryptedMessage.from[j] = (encryptedMessage.from[j] - (getPrivateKey() % 74));
+            }
+            for (int j = 0; j < strlen(encryptedMessage.to); ++j) {
+                decryptedMessage.to[j] = (encryptedMessage.to[j] - (getPrivateKey() % 74));
+            }
+            for (int j = 0; j < strlen(encryptedMessage.text); ++j) {
+                decryptedMessage.text[j] = (encryptedMessage.text[j] - (getPrivateKey() % 74));
+            }
+            std::cout << "Decrypted message: From: " << decryptedMessage.from << " to: " << decryptedMessage.to
+                      << " Text: " << decryptedMessage.text << std::endl;
+        }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+    return reply;
+}
+
+Reply Client::getPublicKey(const int socketFD) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::GetPublicKey);
+
+    if (reply == Reply::Allowed) {
+        ssize_t n;
+        long long PublicP;
+        n = read(socketFD, &PublicP, sizeof(long long));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+        this->P = PublicP;
+        reply = Reply::Agree;
+
+        n = write(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+        long long PublicG;
+        n = read(socketFD, &PublicG, sizeof(long long));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+
+        this->G = PublicG;
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+    }
+
+    return reply;
+}
+
+Reply Client::buildSymmetricConnection(const int socketFD) {
+    Reply reply;
+    reply = this->sendAction(socketFD, Action::BuildSymmetricConnection);
+
+    if (reply == Reply::Allowed) {
+        long long privateKeyBase = primeNumberGenerator();
+        long long privateKeyComponentClient;
+        long long privateKeyComponentServer;
+        privateKeyComponentClient = diffieHelmanStepOne(privateKeyBase);
+
+        ssize_t n;
+        n = write(socketFD, &privateKeyComponentClient, sizeof(long long));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+
+        reply = Reply::Agree;
+        n = write(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error writing to socket");
+        }
+
+        n = read(socketFD, &privateKeyComponentServer, sizeof(long long));
+        if (n < 0) {
+            perror("Error reading from socket");
+        }
+
+        long long temp = diffieHelmanStepTwo(privateKeyComponentServer, privateKeyBase);
+        this->privateKey = temp;
+        if (this->privateKey != 0) {
+
+        }
+
+        n = read(socketFD, &reply, sizeof(Reply));
+        if (n < 0) {
+            perror("Error writing to socket");
+        }
+    }
+    return reply;
+}
+
+Reply Client::addFriend(const int socketFD, const userData &user) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::AddFriend);
 
@@ -221,7 +369,7 @@ Reply Client::getFriendRequests(const int socketFD) {
     return reply;
 }
 
-Reply Client::removeFriend(const int socketFD, const userData& user) {
+Reply Client::removeFriend(const int socketFD, const userData &user) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::RemoveFriend);
 
@@ -241,7 +389,7 @@ Reply Client::removeFriend(const int socketFD, const userData& user) {
     return reply;
 }
 
-Reply Client::sendFile(const int socketFD, const fileReducedData& file) {
+Reply Client::sendFile(const int socketFD, const fileReducedData &file) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::SendFile);
 
@@ -257,6 +405,7 @@ Reply Client::sendFile(const int socketFD, const fileReducedData& file) {
             perror("Error reading from socket");
         }
     }
+
     return reply;
 }
 
@@ -281,41 +430,6 @@ Reply Client::getHistory(const int socketFD) {
             std::cout << "From: " << message.from << " To: " << message.to << " Text: " << message.text << std::endl;
         }
         std::cout << "---History" << std::endl;
-
-        n = read(socketFD, &reply, sizeof(Reply));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-    }
-    return reply;
-}
-
-
-Reply Client::getPublicKey(const int socketFD) {
-    Reply reply;
-    reply = this->sendAction(socketFD, Action::SendPublicKey);
-
-    if (reply == Reply::Allowed) {
-        int n;
-        long long PublicP;
-        n = read(socketFD, &PublicP, sizeof(long long));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-        this->P = PublicP;
-        reply = Reply::Agree;
-
-        n = write(socketFD, &reply, sizeof(Reply));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-        long long PublicG;
-        n = read(socketFD, &PublicG, sizeof(long long));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-
-        this->G = PublicG;
 
         n = read(socketFD, &reply, sizeof(Reply));
         if (n < 0) {
@@ -365,205 +479,11 @@ Reply Client::getNewFiles(const int socketFD) {
             perror("Error reading from socket");
         }
     }
-    return reply;
-}
-
-
-long long Client::diffieHelmanStepOne(long long Prime) {
-    long long k = Prime;
-    long long g = this->getG();
-    long long p = this->getP();
-    long long temp = ((g^k) % p);
-//    std::cout << " Diffie 1 = " << temp << std::endl;
-    return temp;
-}
-
-long long Client::diffieHelmanStepTwo(long long privateKeyComponentServer, long long privateKeyBase) {
-    long long g = this->getG();
-    long long p = this->getP();
-    long long temp = ((privateKeyComponentServer) ^ privateKeyBase) % p;
-//    std::cout << " Diffie 2 = " << temp << std::endl;
-    return temp;
-}
-
-
-Reply Client::buildSymmetricConnection(const int socketFD) {
-//    std::cout << " Zpusteny BSC" << std::endl;
-    long long privateKeyBase = primeNumberGenerator();
-    long long privateKeyComponentClient;
-    long long privateKeyComponentServer;
-    Reply reply;
-    reply = this->sendAction(socketFD, Action::BuildSymmetricConnection);
-    std::cout << (int) reply;
-    privateKeyComponentClient = diffieHelmanStepOne(privateKeyBase);
-    if (reply == Reply::Allowed) {
-//        std::cout << "Idem do servra " << privateKeyComponentClient <<std::endl;
-        ssize_t n;
-        n = write(socketFD, &privateKeyComponentClient, sizeof(long long));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-
-        reply = Reply::Agree;
-        n = write(socketFD, &reply, sizeof(Reply));
-        if (n < 0) {
-            perror("Error writing to socket");
-        }
-
-//        std::cout << "Idem od servera" << std::endl;
-        n = read(socketFD, &privateKeyComponentServer, sizeof(long long));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-
-//        std::cout << "Zo servra prislo " << privateKeyComponentServer << std::endl;
-
-        long long temp = diffieHelmanStepTwo(privateKeyComponentServer, privateKeyBase);
-        this->privateKey = temp;
-        if (this->privateKey != 0) {
-//            std::cout << "Success, Private key je vytvoreny." << std::endl;
-        }
-
-        n = read(socketFD, &reply, sizeof(Reply));
-        if (n < 0) {
-            perror("Error writing to socket");
-        }
-    }
-    return reply;
-}
-
-long long Client::getP() {
-    long long temp = this->P;
-    return temp;
-}
-
-long long Client::getG() {
-    long long temp = this->G;
-    return temp;
-}
-
-void Client::afterLoginSymetryPairing(const int socketFD) {
-    Client::getInstance().getPublicKey(socketFD);
-//    std::cout << "P = " << this->getP() << " G = " << this->getG() << std::endl;
-    Client::getInstance().buildSymmetricConnection(socketFD);
-//    std::cout << "private key = " << this->privateKey << std::endl;
-}
-
-
-long long Client::primeNumberGenerator() {
-    long long randomBeginning = ((rand()%10000)+ 10000) - (rand()%10000);
-    long long primeNum = randomBeginning;
-    bool isPrime = false;
-//    std::cout << "Started searching for a sufficient prime, beginning is " << randomBeginning << std::endl;
-    while (isPrime == false) {
-        for (long long i = 2; i <= primeNum / 2; ++i) {
-            if (primeNum % i == 0) {
-                isPrime = false;
-                break;
-            }
-            isPrime = true;
-        }
-        ++primeNum;
-    }
-    --primeNum;
-//    std::cout << "Client has found a sufficient prime, " << primeNum << std::endl;
-
-    return primeNum;
-}
-
-long long int Client::getPrivateKey() const {
-    long long temp = this->privateKey;
-    return temp;
-}
-
-Reply Client::sendEncryptedMessage(const int socketFD, messageReducedData message) {
-    messageReducedData decryptedMessage = message;
-    messageReducedData encryptedMessage = message;
-    std::cout<< "Decrypted message: to: " << decryptedMessage.to << "; Text: " << decryptedMessage.text << std::endl;
-
-    std::string to = decryptedMessage.to;
-    std::string text = decryptedMessage.text;
-
-    for (int i = 0; i < to.length(); ++i) {
-        encryptedMessage.to[i] = (to[i] + (getPrivateKey() % 74));
-    }
-    for (int i = 0; i < text.length(); ++i) {
-        encryptedMessage.text[i] = (text[i] + (getPrivateKey() % 74));
-    }
-    std::cout<< "Encrypted message: to: " << encryptedMessage.to << "; Text: " << encryptedMessage.text << std::endl;
-    Reply reply;
-    reply = this->sendAction(socketFD, Action::SendEncryptedMessage);
-    if (reply == Reply::Allowed) {
-        int n;
-        n = write(socketFD, &encryptedMessage, sizeof(messageReducedData));
-        if (n < 0) {
-            perror("Error writing to socket");
-        }
-
-        n = read(socketFD, &reply, sizeof(Reply));
-        if (n < 0) {
-            perror("Error reading from socket");
-        }
-    }
 
     return reply;
 }
 
-Reply Client::getNewEncryptedMessages(const int socketFD) {
-        Reply reply;
-        reply = this->sendAction(socketFD, Action::GetEncryptedMessages);
-
-        if (reply == Reply::Allowed) {
-            int n;
-            int newMessagesNumber;
-            n = read(socketFD, &newMessagesNumber, sizeof(int));
-            if (n < 0) {
-                perror("Error reading from socket");
-            }
-            std::cout << "You have " << newMessagesNumber << " new encrypted messages." << std::endl;
-
-            if (newMessagesNumber != 0) {
-                messageData decryptedMessage;
-                messageData encryptedMessage;
-                messageData newMessage;
-                for (int i = 0; i < newMessagesNumber; i++) {
-                    n = read(socketFD, &newMessage, sizeof(messageData));
-                    if (n < 0) {
-                        perror("Error reading from socket");
-                    }
-
-                    encryptedMessage = newMessage;
-                    std::cout << "Encrypted message: From: " << encryptedMessage.from << " to: " << encryptedMessage.to<< " Text: " << encryptedMessage.text << std::endl;
-
-                    std::string from = encryptedMessage.from;
-                    std::string to = encryptedMessage.to;
-                    std::string text = encryptedMessage.text;
-
-                    for (int i = 0; i < from.length(); ++i) {
-                        decryptedMessage.from[i] = (from[i] - (getPrivateKey() % 74));
-                    }
-                    for (int i = 0; i < to.length(); ++i) {
-                        decryptedMessage.to[i] = (to[i] - (getPrivateKey() % 74));
-                    }
-                    for (int i = 0; i < text.length(); ++i) {
-                        decryptedMessage.text[i] = (text[i] - (getPrivateKey() % 74));
-                    }
-                    std::cout << "Decrypted message: From: " << decryptedMessage.from << " to: " << decryptedMessage.to << " Text: " << decryptedMessage.text << std::endl;
-                }
-
-                n = read(socketFD, &reply, sizeof(Reply));
-                if (n < 0) {
-                    perror("Error reading from socket");
-                }
-            }
-            else{
-                std::cout << " Nemate ziadne nove encrypted messages. "<< std::endl;
-            }
-        }
-        return reply;
-    }
-
-Reply Client::createGroup(const int socketFD, const groupData& group) {
+Reply Client::createGroup(const int socketFD, const groupData &group) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::CreateGroup);
 
@@ -583,7 +503,7 @@ Reply Client::createGroup(const int socketFD, const groupData& group) {
     return reply;
 }
 
-Reply Client::addUserToGroup(const int socketFD, const groupData& group) {
+Reply Client::addUserToGroup(const int socketFD, const groupData &group) {
     Reply reply;
     reply = this->sendAction(socketFD, Action::AddUserToGroup);
 
@@ -601,6 +521,57 @@ Reply Client::addUserToGroup(const int socketFD, const groupData& group) {
     }
 
     return reply;
+}
+
+void Client::afterLoginSymetryPairing(const int socketFD) {
+    Client::getInstance().getPublicKey(socketFD);
+    Client::getInstance().buildSymmetricConnection(socketFD);
+}
+
+long long Client::getP() const {
+    return this->P;
+}
+
+long long Client::getG() const {
+    return this->G;
+}
+
+long long Client::getPrivateKey() const {
+    return this->privateKey;
+}
+
+long long Client::primeNumberGenerator() {
+    long long randomBeginning = ((rand() % 10000) + 10000) - (rand() % 10000);
+    long long primeNum = randomBeginning;
+    bool isPrime = false;
+    while (!isPrime) {
+        for (long long i = 2; i <= primeNum / 2; ++i) {
+            if (primeNum % i == 0) {
+                isPrime = false;
+                break;
+            }
+            isPrime = true;
+        }
+        ++primeNum;
+    }
+    --primeNum;
+
+    return primeNum;
+}
+
+long long Client::diffieHelmanStepOne(long long prime) {
+    long long k = prime;
+    long long g = this->getG();
+    long long p = this->getP();
+    long long temp = ((g ^ k) % p);
+    return temp;
+}
+
+long long Client::diffieHelmanStepTwo(long long privateKeyComponentServer, long long privateKeyBase) {
+    long long g = this->getG();
+    long long p = this->getP();
+    long long temp = ((privateKeyComponentServer) ^ privateKeyBase) % p;
+    return temp;
 }
 
 Reply Client::sendAction(const int socketFD, Action action) {

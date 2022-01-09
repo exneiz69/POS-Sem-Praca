@@ -13,74 +13,71 @@ public:
         return instance;
     }
 
-    Reply registerAccount(int socketFD, const userData& newUser);
+    Reply registerAccount(int socketFD, const userData &newUser);
 
     Reply deleteAccount(int socketFD);
 
-    Reply login(int socketFD, const userData& user);
+    Reply login(int socketFD, const userData &user);
 
     Reply logout(int socketFD);
 
-    Reply sendMessage(int socketFD, const messageReducedData& message);
+    Reply sendMessage(int socketFD, const messageReducedData &message);
 
-    Reply sendFile(int socketFD, const fileReducedData& file);
+    Reply sendFile(int socketFD, const fileReducedData &file);
 
     Reply getNewMessages(int socketFD);
-  
+
+    Reply sendEncryptedMessage(int socketFD, const messageReducedData &message);
+
+    Reply getNewEncryptedMessages(int socketFD);
+
+    Reply getPublicKey(int socketFD);
+
+    Reply buildSymmetricConnection(int socketFD);
+
     Reply getNewFiles(int socketFD);
 
-    Reply addFriend(int socketFD, const userData& user);
+    Reply addFriend(int socketFD, const userData &user);
 
-    Reply removeFriend(int socketFD, const userData& user);
+    Reply removeFriend(int socketFD, const userData &user);
 
     Reply getFriendRequests(int socketFD);
 
     Reply getHistory(int socketFD);
 
-    Reply createGroup(int socketFD, const groupData& group);
+    Reply createGroup(int socketFD, const groupData &group);
 
-    Reply getPublicKey(int socketFD);
-
-    Reply sendEncryptedMessage(int socketFD, messageReducedData message);
-
-    Reply getNewEncryptedMessages(int socketFD);
+    Reply addUserToGroup(int socketFD, const groupData &group);
 
     void afterLoginSymetryPairing(int socketFD);
 
-    Reply createGroup(int socketFD, groupData group);
-
-    Reply addUserToGroup(int socketFD, const groupData& group);
-  
 private:
     long long P = 0;
+
     long long G = 0;
+
     long long privateKey = 0;
-
-private:
-
-    long long int getPrivateKey() const;
 
     Client() {}
 
-    Reply sendAction(int socketFD, Action action);
+    long long getP() const;
 
-    Reply buildSymmetricConnection(const int socketFD);
+    long long getG() const;
 
-    long long diffieHelmanStepOne(long long Prime);
+    long long getPrivateKey() const;
+
+    long long primeNumberGenerator();
+
+    long long diffieHelmanStepOne(long long prime);
 
     long long diffieHelmanStepTwo(long long privateKeyComponentClient, long long privateKeyComponentServer);
 
-    long long getP();
-
-    long long getG();
-
-    long long primeNumberGenerator();
+    Reply sendAction(int socketFD, Action action);
 
 public:
     Client(Client const &) = delete;
 
     void operator=(Client const &) = delete;
 };
-
 
 #endif //CLIENT_CLIENT_H
